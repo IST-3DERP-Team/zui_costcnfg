@@ -1,0 +1,169 @@
+<mvc:View controllerName="zuicostcnfg.controller.Main"
+    xmlns:mvc="sap.ui.core.mvc" 
+    xmlns:core="sap.ui.core"
+    displayBlock="true"
+    xmlns="sap.m"
+    height="100%"
+    xmlns:uiL="sap.ui.layout"
+    xmlns:uiT="sap.ui.table">
+    <Page id="page" enableScrolling="false" class="sapUiNoContentPadding" showHeader="false">
+        <dependents>
+            <core:CommandExecution id="CE_NEW" command="New" enabled="true" execute=".createData" />
+            <core:CommandExecution id="CE_EDIT" command="Edit" enabled="true" execute=".editData" />
+            <core:CommandExecution id="CE_DELETE" command="Delete" enabled="true" execute=".deleteData" />
+            <core:CommandExecution id="CE_SAVE" command="Save" enabled="true" execute=".batchSaveData" />
+            <core:CommandExecution id="CE_CANCEL" command="Cancel" enabled="true" execute=".cancelData" />
+            <core:CommandExecution id="CE_REFRESH" command="Refresh" enabled="true" execute=".refreshData" />
+            <core:CommandExecution id="CE_COPY" command="Copy" enabled="true" execute=".copyData" />
+        </dependents>
+        <content>
+            <VBox fitContainer="true" class="sidePadding">
+                <uiT:Table id="headerTab"
+                    class="sapUiTinyMarginBottom sapUiTinyMarginBegin sapUiTinyMarginEnd"
+                    visibleRowCountMode="Auto"
+                    showColumnVisibilityMenu="true"
+                    enableColumnFreeze="true"
+                    selectionMode="MultiToggle"
+                    firstVisibleRowChanged="onFirstVisibleRowChanged"
+                    cellClick="onCellClick"
+                    sort="onSort"
+                    filter="onFilter"
+                    columnFreeze="onColumnUpdated"
+                    columnMove="onColumnUpdated"
+                    columnResize="onColumnUpdated"
+                    columnSelect="onColumnUpdated"
+                    columnVisibility="onColumnUpdated">
+                    <uiT:rowSettingsTemplate>
+                        <uiT:RowSettings highlight="{= ${EDITED} === true ? 'Warning' : null}" />
+                    </uiT:rowSettingsTemplate>
+                    <uiT:extension>
+                        <Toolbar>
+                            <Text text="{counts>/header} Components" class="selHdrKeyFontStyle" />
+                            <ToolbarSpacer/>
+                            <SearchField
+                                id="searchFieldHdr"
+                                placeholder="Filter"
+                                value=""
+                                search="filterGlobally"
+                                width="15rem"/>
+                            <ToolbarSeparator/> 
+                            <Button id="btnAddHdr" 
+                                icon="sap-icon://add"
+                                press="onCreate" 
+                                tooltip="{ddtext>/ADD}"
+                                visible="true"/>
+                            <Button id="btnEditHdr" 
+                                icon="sap-icon://edit"
+                                press="onEdit"
+                                tooltip="{ddtext>/EDIT}"
+                                visible="true"/>
+                            <Button id="btnAddNewHdr" 
+                                icon="sap-icon://add"
+                                press="onAddNewRow" 
+                                tooltip="{ddtext>/ADD}"
+                                visible="false"/>
+                            <Button id="btnSaveHdr" 
+                                icon="sap-icon://save"
+                                press=".onBatchSave" 
+                                tooltip="{ddtext>/SAVE}"
+                                visible="false" />
+                            <Button id="btnCancelHdr" 
+                                icon="sap-icon://sys-cancel"
+                                press="onCancel" 
+                                tooltip="{ddtext>/CANCEL}"
+                                visible="false" /> 
+                            <Button id="btnDeleteHdr" 
+                                icon="sap-icon://delete"
+                                press="onDelete"
+                                tooltip="{ddtext>/DELETE}"
+                                visible="true"/>
+                            <Button id="btnCopyHdr" 
+                                icon="sap-icon://copy"
+                                press="onCopy"
+                                tooltip="{ddtext>/COPY}"
+                                visible="true"/>
+                            <Button id="btnRefreshHdr" 
+                                icon="sap-icon://refresh"
+                                press="onRefresh"
+                                tooltip="{ddtext>/REFRESH}"
+                                visible="true"/>
+                        </Toolbar>
+                    </uiT:extension>
+                    <uiT:layoutData>
+                        <FlexItemData growFactor="1" baseSize="0%"/>
+                    </uiT:layoutData> 
+                </uiT:Table>
+                <uiT:Table id="detailTab"
+                    class="sapUiTinyMarginBottom sapUiTinyMarginBegin sapUiTinyMarginEnd"
+                    visibleRowCountMode="Auto"
+                    showColumnVisibilityMenu="true"
+                    enableColumnFreeze="true"
+                    selectionMode="MultiToggle"
+                    firstVisibleRowChanged="onFirstVisibleRowChanged"
+                    cellClick="onCellClick"
+                    sort="onSort"
+                    filter="onFilter"
+                    columnFreeze="onColumnUpdated"
+                    columnMove="onColumnUpdated"
+                    columnResize="onColumnUpdated"
+                    columnSelect="onColumnUpdated"
+                    columnVisibility="onColumnUpdated">
+                    <uiT:rowSettingsTemplate>
+                        <uiT:RowSettings highlight="{= ${EDITED} === true ? 'Warning' : null}" />
+                    </uiT:rowSettingsTemplate>
+                    <uiT:extension>
+                        <Toolbar>
+                            <Text text="Component: {ui>/activeCompDisplay} ( {counts>/detail} Variables )" class="selHdrKeyFontStyle" />
+                            <ToolbarSpacer/>
+                            <SearchField
+                                id="searchFieldDtl"
+                                placeholder="Filter"
+                                value=""
+                                search="filterGlobally"
+                                width="15rem"/>
+                            <ToolbarSeparator/>
+                            <Button id="btnAddDtl" 
+                                icon="sap-icon://add"
+                                press="onCreate" 
+                                tooltip="{ddtext>/ADD}"
+                                visible="true"/>
+                            <Button id="btnEditDtl" 
+                                icon="sap-icon://edit"
+                                press="onEdit"
+                                tooltip="{ddtext>/EDIT}"
+                                visible="true"/>
+                            <Button id="btnAddNewDtl" 
+                                icon="sap-icon://add"
+                                press="onAddNewRow" 
+                                tooltip="{ddtext>/ADD}"
+                                visible="false"/>                                
+                            <Button id="btnSaveDtl" 
+                                icon="sap-icon://save"
+                                press=".onBatchSave" 
+                                tooltip="{ddtext>/SAVE}"
+                                visible="false" />
+                            <Button id="btnCancelDtl" 
+                                icon="sap-icon://sys-cancel"
+                                press="onCancel" 
+                                tooltip="{ddtext>/CANCEL}"
+                                visible="false" /> 
+                            <Button id="btnDeleteDtl" 
+                                icon="sap-icon://delete"
+                                press="onDelete"
+                                tooltip="{ddtext>/DELETE}"
+                                visible="true"/>
+                            <Button id="btnRefreshDtl" 
+                                icon="sap-icon://refresh"
+                                press="onRefresh"
+                                tooltip="{ddtext>/REFRESH}"
+                                visible="true"/>
+                        </Toolbar>
+                    </uiT:extension>
+                    <uiT:layoutData>
+                        <FlexItemData growFactor="1" baseSize="0%"/>
+                    </uiT:layoutData> 
+                </uiT:Table>                
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

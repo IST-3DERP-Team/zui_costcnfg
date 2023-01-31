@@ -1,0 +1,24 @@
+{
+    "header": [
+        {"ColumnName": "COSTCOMPCD", 
+            "ValueHelp": {"show": true, "items": {"path": "COMPONENT_MODEL", "value": "COSTCOMPCD", "text": "COMPDESC"},
+            "SuggestionItems": {"path": "COMPONENT_MODEL>/", "text": "{COMPONENT_MODEL>COSTCOMPCD}", "additionalText": "{COMPONENT_MODEL>COMPDESC}", "maxSuggestionWidth": "500px"}}
+        },
+        {"ColumnName": "COMPANYCD", 
+            "ValueHelp": {"show": true, "items": {"path": "COMPANY_MODEL", "value": "COMPANYCD", "text": "COMPANYCD"},
+            "SuggestionItems": {"path": "COMPANY_MODEL>/", "text": "{COMPANY_MODEL>COMPANYCD}", "maxSuggestionWidth": "300px"}}
+        },
+        {"ColumnName": "PLANTCD", 
+            "ValueHelp": {"show": true, "items": {"path": "PLANT_MODEL", "value": "PLANTCD", "text": "PLANTCD"},
+            "SuggestionItems": {"path": "PLANT_MODEL>/", "text": "{PLANT_MODEL>PLANTCD}", "maxSuggestionWidth": "300px"}}
+        },
+        {"ColumnName": "SALESTERM", 
+            "ValueHelp": {"show": true, "items": {"path": "SALESTERM_MODEL", "value": "INCO1", "text": "INCO1"},
+            "SuggestionItems": {"path": "SALESTERM_MODEL>/", "text": "{SALESTERM_MODEL>INCO1}", "maxSuggestionWidth": "300px"}}
+        },
+        {"ColumnName": "STATUSCDCS", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "STATUS_MODEL", "value": "STATUSCD", "text": "STATUSDESC"},
+            "SuggestionItems": {"path": "STATUS_MODEL>/", "text": "{STATUS_MODEL>STATUSCD}", "additionalText": "{STATUS_MODEL>STATUSDESC}", "maxSuggestionWidth": "200px"}}
+        }
+    ]
+}
