@@ -369,9 +369,10 @@ sap.ui.define([
                                         })
                                 })
                             }
-
+                            
                             me._aColumns[sTabId.replace("Tab", "")] = oData.results;
                             me.setTableColumns(sTabId, oData.results);
+                            console.log(me._aColumns[sTabId.replace("Tab", "")])
                         }
                     },
                     error: function (err) {
@@ -520,8 +521,7 @@ sap.ui.define([
                                     })
 
                                     if (bValueFormatter) {
-                                        oInput.setProperty("textFormatMode", sTextFormatMode)
-
+                                        oInput.setProperty("textFormatMode", sTextFormatMode);
                                         oInput.bindValue({  
                                             parts: [{ path: sColName }, { value: ci.ValueHelp["items"].path }, { value: ci.ValueHelp["items"].value }, { value: ci.ValueHelp["items"].text }, { value: sTextFormatMode }],
                                             formatter: this.formatValueHelp.bind(this)
@@ -589,7 +589,8 @@ sap.ui.define([
                                         type: sap.m.InputType.Number,
                                         textAlign: sap.ui.core.TextAlign.Right,
                                         value: "{path:'" + sColName + "', formatOptions:{ minFractionDigits:" + ci.Decimal + ", maxFractionDigits:" + ci.Decimal + " }, constraints:{ precision:" + ci.Length + ", scale:" + ci.Decimal + " }}",
-                                        change: this.onNumberChange.bind(this)
+                                        // change: this.onNumberChange.bind(this),
+                                        liveChange: this.onNumberLiveChange.bind(this)
                                     }));
                                 }
                                 else if (ci.DataType === "BOOLEAN") {
@@ -637,7 +638,7 @@ sap.ui.define([
                                 }
 
                                 if (ci.Mandatory) {
-                                    col.getLabel().addStyleClass("requiredField");
+                                    col.getLabel().addStyleClass("sapMLabelRequired");
                                 }
 
                                 if (ci.DataType === "STRING") oNewRow[sColName] = "";
@@ -779,12 +780,21 @@ sap.ui.define([
                                     }
                                 }
                                 else if (ci.DataType === "NUMBER") {
-                                    // console.log("a3 NUMBER " + sColName);
                                     col.setTemplate(new sap.m.Input({
                                         type: sap.m.InputType.Number,
                                         textAlign: sap.ui.core.TextAlign.Right,
-                                        value: "{path:'" + sColName + "', formatOptions:{ minFractionDigits:" + ci.Decimal + ", maxFractionDigits:" + ci.Decimal + " }, constraints:{ precision:" + ci.Length + ", scale:" + ci.Decimal + " }}",
-                                        change: this.onNumberChange.bind(this)
+                                        value: {
+                                            path: sColName,
+                                            formatOptions: {
+                                                minFractionDigits: ci.Decimal,
+                                                maxFractionDigits: ci.Decimal
+                                            },
+                                            constraints: {
+                                                precision: ci.Length,
+                                                scale: ci.Decimal
+                                            }
+                                        },
+                                        liveChange: this.onNumberLiveChange.bind(this)
                                     }));
                                 }
                                 else {
@@ -829,7 +839,7 @@ sap.ui.define([
                                 }
 
                                 if (ci.Mandatory) {
-                                    col.getLabel().addStyleClass("requiredField");
+                                    col.getLabel().addStyleClass("sapMLabelRequired");
                                 }
                             }
                         })
@@ -896,7 +906,7 @@ sap.ui.define([
                             }
                         })
 
-                    col.getLabel().removeStyleClass("requiredField");                        
+                    col.getLabel().removeStyleClass("sapMLabelRequired");                        
                 })
 
                 this.byId(this._sActiveTable).getModel().getData().rows.forEach(item => item.EDITED = false);
@@ -1161,7 +1171,7 @@ sap.ui.define([
     
                     console.log(aNewRows);
                     console.log(aEditedRows);
-
+                    return;
                     if (aNewRows.length > 0) {
                         if (this._validationErrors.length === 0) {
                             this._oModel.setUseBatch(true);
@@ -1728,6 +1738,57 @@ sap.ui.define([
 
                 if (this._sActiveTable === "headerTab") this._bHdrChanged = true;
                 else if (this._sActiveTable === "detailTab") this._bDtlChanged = true;
+            },
+
+            onNumberLiveChange: function(oEvent) {
+                var oSource = oEvent.getSource();
+                var vColDecPlaces = oSource.getBindingInfo("value").constraints.scale;
+                var vColLength = oSource.getBindingInfo("value").constraints.precision;
+
+                if (oEvent.getParameters().value.split(".")[0].length > (vColLength - vColDecPlaces)) {
+                    oEvent.getSource().setValueState("Error");
+                    oEvent.getSource().setValueStateText("Enter a number with a maximum whole number length of " + (vColLength - vColDecPlaces));
+
+                    if (this._validationErrors.filter(fItem => fItem === oEvent.getSource().getId()).length === 0) {
+                        this._validationErrors.push(oEvent.getSource().getId());
+                    }
+                }
+                else if (oEvent.getParameters().value.split(".").length > 1) {
+                    if (vColDecPlaces === 0) {
+                        oEvent.getSource().setValueState("Error");
+                        oEvent.getSource().setValueStateText("Enter a number without decimal place/s");
+                        
+                        if (this._validationErrors.filter(fItem => fItem === oEvent.getSource().getId()).length === 0) {
+                            this._validationErrors.push(oEvent.getSource().getId());
+                        }
+                    }
+                    else {
+                        if (oEvent.getParameters().value.split(".")[1].length > vColDecPlaces) {
+                            oEvent.getSource().setValueState("Error");
+                            oEvent.getSource().setValueStateText("Enter a number with a maximum of " + vColDecPlaces.toString() + " decimal places");
+                            
+                            if (this._validationErrors.filter(fItem => fItem === oEvent.getSource().getId()).length === 0) {
+                                this._validationErrors.push(oEvent.getSource().getId());
+                            }
+                        }
+                        else {
+                            oEvent.getSource().setValueState("None");
+                            this._validationErrors.forEach((item, index) => {
+                                if (item === oEvent.getSource().getId()) {
+                                    this._validationErrors.splice(index, 1);
+                                }
+                            })
+                        }
+                    }
+                }
+                else {
+                    oEvent.getSource().setValueState("None");
+                    this._validationErrors.forEach((item, index) => {
+                        if (item === oEvent.getSource().getId()) {
+                            this._validationErrors.splice(index, 1);
+                        }
+                    })
+                }
             },
 
             handleValueHelp: function (oEvent) {
