@@ -20,9 +20,9 @@
                 "uri": "/sap/opu/odata/sap/ZGW_3DERP_COSTCNFG_SRV/",
                 "type": "OData",
                 "settings": {
+                    "odataVersion": "2.0",
                     "annotations": [],
-                    "localUri": "localService/mainService/metadata.xml",
-                    "odataVersion": "2.0"
+                    "localUri": "localService/mainService/metadata.xml"
                 }
             },
             "ZGW_3DERP_COMMON_SRV": {
@@ -64,32 +64,33 @@
                 "sap.ui.comp": {},
                 "sap.ui.generic.app": {},
                 "sap.ui.table": {},
-                "sap.ushell": {}
+                "sap.ushell": {},
+                "sap.suite.ui.microchart": {}
             }
         },
         "commands": {
-			"New": {
-				"shortcut": "Ctrl+I"
-			},
+            "New": {
+                "shortcut": "Ctrl+I"
+            },
             "Edit": {
-				"shortcut": "Ctrl+E"
-			},
-			"Delete": {
-				"shortcut": "Ctrl+D"
-			},
-			"Save": {
-				"shortcut": "Ctrl+S"
-			},
+                "shortcut": "Ctrl+E"
+            },
+            "Delete": {
+                "shortcut": "Ctrl+D"
+            },
+            "Save": {
+                "shortcut": "Ctrl+S"
+            },
             "Cancel": {
-				"shortcut": "Ctrl+X"
-			},
+                "shortcut": "Ctrl+X"
+            },
             "Refresh": {
-				"shortcut": "Ctrl+R"
-			},
+                "shortcut": "Ctrl+R"
+            },
             "Copy": {
-				"shortcut": "Ctrl+C"
-			}              
-		},
+                "shortcut": "Ctrl+C"
+            }
+        },
         "contentDensities": {
             "compact": true,
             "cozy": true
@@ -104,7 +105,11 @@
             "": {
                 "dataSource": "mainService",
                 "preload": true,
-                "settings": {}
+                "settings": {
+                    "defaultBindingMode": "TwoWay",
+                    "defaultCountMode": "Inline",
+                    "refreshAfterChange": false
+                }
             },
             "ZGW_3DERP_COMMON_SRV": {
                 "dataSource": "ZGW_3DERP_COMMON_SRV",
