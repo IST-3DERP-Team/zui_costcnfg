@@ -225,7 +225,7 @@ sap.ui.define([
                 this._tableValueHelpDialog.setContentHeight("500px");
             }
             else {
-                this._tableValueHelpDialog.setContentHeight("250px");
+                this._tableValueHelpDialog.setContentHeight("260px");
             }
 
             if (oColumns.columns.length === 1) {

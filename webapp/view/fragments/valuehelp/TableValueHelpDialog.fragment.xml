@@ -6,7 +6,7 @@
 	xmlns:js="zuicostcnfg.js">
     <Dialog 
 		contentWidth="375px"
-        contentHeight="250px"
+        contentHeight="260px"
         title="Select {/title}"
         resizable="true"
         draggable="true"
