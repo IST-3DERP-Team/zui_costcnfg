@@ -45,6 +45,7 @@
                                 placeholder="Filter"
                                 value=""
                                 search="filterGlobally"
+                                visible="false"
                                 width="15rem"/>
                             <ToolbarSeparator/> 
                             <Button id="btnAddHdr" 
@@ -120,6 +121,7 @@
                                 placeholder="Filter"
                                 value=""
                                 search="filterGlobally"
+                                visible="false"
                                 width="15rem"/>
                             <ToolbarSeparator/>
                             <Button id="btnAddDtl" 
