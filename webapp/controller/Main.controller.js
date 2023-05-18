@@ -474,6 +474,13 @@ sap.ui.define([
                         }); 
                     }
 
+                    // var oMenu = new sap.ui.unified.Menu({
+                    //     items: new sap.ui.unified.MenuItem({
+                    //         text: "My custom menu entry",
+                    //         select: "onQuantityCustomItemSelect"
+                    //     })
+                    // }) 
+
                     return new sap.ui.table.Column({
                         id: sTabId.replace("Tab", "") + "Col" + sColumnId,
                         label: new sap.m.Text({ text: sColumnLabel }),
@@ -495,6 +502,53 @@ sap.ui.define([
                 //         name: item.ColumnName
                 //     });
                 // })
+
+                // var oSubMenu = new sap.ui.unified.Menu();
+                // var oSubMenuItem = new sap.ui.unified.MenuItem({
+                //     text: "test",
+                //     select: function(oEvent) {
+                //         alert(oEvent.getParameter("item").getText() + " Selected!");
+                //     },
+                //     icon: "sap-icon://filter"
+                // });
+                // oSubMenu.addItem(oSubMenuItem)
+                
+                // var oMenuItem = new sap.ui.unified.MenuItem({
+                //     icon: "sap-icon://filter",
+                //     text: "Filter",
+                //     // select: "onQuantityCustomItemSelect"
+                //     submenu: oSubMenu
+                // })
+
+                // oTable.getColumns().forEach(col => {
+                //     console.log(col.getMenu())
+                //     // Loop onto each column and attach Column Menu Open event
+                //     col.attachColumnMenuOpen(function(oEvent) {
+                //         //Get Menu associated with column
+                //         var oMenu = col.getMenu();                        
+
+                //         //Create the Menu Item that need to be added
+                //         setTimeout(() => {
+                //             console.log(oMenu)
+                //             var wCustomFilter = false;
+                //             oMenu.getItems().forEach(item => {
+                //                 if (item.sId.indexOf("filter") >= 0) {
+                //                     oMenu.removeItem(item);
+                //                 }
+
+                //                 if (item.mProperties.text !== undefined && item.mProperties.text === "Filter") {
+                //                     wCustomFilter = true;
+                //                 }
+                //             })
+                            
+                //             if (!wCustomFilter) {
+                //                 oMenu.insertItem(oMenuItem, 2);                               
+                //             }
+                            
+                //             oMenu.setPageSize(oMenu.getItems().length); 
+                //         }, 10);
+                //     });
+                // });
             },
 
             setRowCreateMode() {
@@ -2026,6 +2080,7 @@ sap.ui.define([
 
             handleValueHelpChange: function (oEvent) {
                 var oSource = oEvent.getSource();
+                var sRowPath = oSource.oParent.getBindingContext().sPath;
                 var isInvalid = !oSource.getSelectedKey() && oSource.getValue().trim();
                 oSource.setValueState(isInvalid ? "Error" : "None");
 
@@ -2038,6 +2093,8 @@ sap.ui.define([
 
                 if (isInvalid) this._validationErrors.push(oEvent.getSource().getId());
                 else {
+                    this.byId(this._sActiveTable).getModel().setProperty(sRowPath + '/' + oSource.getBindingInfo("value").parts[0].path, oSource.getSelectedKey());
+
                     this._validationErrors.forEach((item, index) => {
                         if (item === oEvent.getSource().getId()) {
                             this._validationErrors.splice(index, 1)
@@ -2045,11 +2102,8 @@ sap.ui.define([
                     })
                 }
 
-                var sRowPath = oSource.oParent.getBindingContext().sPath;
-
-                this.byId(this._sActiveTable).getModel().setProperty(sRowPath + '/' + oSource.getBindingInfo("value").parts[0].path, oSource.getSelectedKey());
                 this.byId(this._sActiveTable).getModel().setProperty(sRowPath + '/EDITED', true);
-                    
+
                 if (this._sActiveTable === "headerTab") this._bHdrChanged = true;
                 else if (this._sActiveTable === "detailTab") this._bDtlChanged = true;
             },

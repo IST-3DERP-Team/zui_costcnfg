@@ -5,7 +5,7 @@ sap.ui.define([
 ], function(JSONModel,Filter,FilterOperator) {
 	"use strict";
 
-	return {        
+	return {
 
         handleTableValueHelp: async function (oEvent) {
             var me = this;
@@ -62,14 +62,16 @@ sap.ui.define([
                     if (vhColumns !== undefined) {
                         var oColProp = vhColumns.filter(fItem => fItem.ColumnName === item);
 
-                        if (oColProp && oColProp.length >= 0) {
-                            aColumns.push({
-                                ColumnName: oColProp[0].ColumnName,
-                                ColumnLabel: oColProp[0].ColumnName,
-                                Width: oColProp[0].ColumnWidth,
-                                DataType: oColProp[0].DataType,
-                                Visible: oColProp[0].Visible
-                            }) 
+                        if (oColProp && oColProp.length > 0) {
+                            if (oColProp[0].Visible) {
+                                aColumns.push({
+                                    ColumnName: oColProp[0].ColumnName,
+                                    ColumnLabel: oColProp[0].ColumnName,
+                                    Width: oColProp[0].ColumnWidth,
+                                    DataType: oColProp[0].DataType,
+                                    Visible: oColProp[0].Visible
+                                })
+                            } 
                         }
                         else {
                             aColumns.push({
@@ -89,13 +91,15 @@ sap.ui.define([
             else {
                 if (vhColumns !== undefined) {
                     vhColumns.forEach(item => {
-                        aColumns.push({
-                            ColumnName: item.ColumnName,
-                            ColumnLabel: item.ColumnName,
-                            Width: item.ColumnWidth,
-                            DataType: item.DataType,
-                            Visible: item.Visible
-                        })
+                        if (item.Visible) {
+                            aColumns.push({
+                                ColumnName: item.ColumnName,
+                                ColumnLabel: item.ColumnName,
+                                Width: item.ColumnWidth,
+                                DataType: item.DataType,
+                                Visible: item.Visible
+                            })
+                        }
                     })
                 }
                 else  {
@@ -174,8 +178,10 @@ sap.ui.define([
             this._tableValueHelpDialog.open();
             var oTable = this._tableValueHelpDialog.getContent()[0].getAggregation("items")[0];
             oTable.attachCellClick(this._tableValueHelp.handleTableValueHelpSelect.bind(this));
-            sap.ui.getCore().byId("tvhSearchField").attachSearch(this._tableValueHelp.handleTableValueHelpFilter);           
-            sap.ui.getCore().byId("btnTVHCancel").attachPress(this._tableValueHelp.handleTableValueHelpCancel.bind(this));
+            // sap.ui.getCore().byId("tvhSearchField").attachSearch(this._tableValueHelp.handleTableValueHelpFilter);           
+            // sap.ui.getCore().byId("btnTVHCancel").attachPress(me._tableValueHelp.handleTableValueHelpCancel.bind(me));
+            this._tableValueHelpDialog.getContent()[0].getItems()[0].getExtension()[0].getContent()[3].attachSearch(this._tableValueHelp.handleTableValueHelpFilter);
+            this._tableValueHelpDialog.getButtons()[0].attachPress(this._tableValueHelp.handleTableValueHelpCancel.bind(this));
 
             //bind columns to the table
             oTable.getModel().setProperty("/columns", oColumns.columns);
@@ -238,7 +244,8 @@ sap.ui.define([
                 this._tableValueHelpDialog.setContentWidth("645px");
             }
 
-            sap.ui.getCore().byId("tvhSearchField").setProperty("value", "");
+            // sap.ui.getCore().byId("tvhSearchField").setProperty("value", "");
+            this._tableValueHelpDialog.getContent()[0].getItems()[0].getExtension()[0].getContent()[3].setProperty("value", "");
         },
 
         handleTableValueHelpSelect: function (oEvent) {
@@ -253,7 +260,7 @@ sap.ui.define([
         },
 
         handleTableValueHelpFilter: function(oEvent) {
-            var oTable = sap.ui.getCore().byId("tvhTab");
+            var oTable = oEvent.getSource().oParent.oParent;
             var sQuery = oEvent.getParameter("query");
             var oFilter = null;
             var aFilter = [];

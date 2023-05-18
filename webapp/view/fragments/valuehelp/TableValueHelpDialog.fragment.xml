@@ -12,10 +12,10 @@
         draggable="true"
         afterOpen="afterOpenCreateGMC">
         <endButton>
-			<Button id="btnTVHCancel" text="Cancel" />
+			<Button text="Cancel" />
 		</endButton>
 		<VBox fitContainer="true">
-			<table:Table id="tvhTab" 
+			<table:Table 
 				enableColumnReordering="false" 
 				class="sapUiTinyMargin" 
 				visibleRowCountMode="Auto" 
@@ -23,11 +23,10 @@
 				selectionBehavior="RowOnly">
 				<table:extension>
 					<Toolbar height="35px" class="sapUiTinyMarginBottom">
-						<Text text="{/count} items" />
+						<Text text="{/count} item/s" />
 						<ToolbarSpacer/>
 						<ToolbarSeparator/>
 						<SearchField
-							id="tvhSearchField"
 							placeholder="Filter"
 							value=""
 							width="15rem"/>                                
