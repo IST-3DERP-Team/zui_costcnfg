@@ -38,7 +38,7 @@
                     </uiT:rowSettingsTemplate>
                     <uiT:extension>
                         <Toolbar>
-                            <Text text="{counts>/header} Components" class="selHdrKeyFontStyle" />
+                            <Text text="{counts>/header} Component/s" class="selHdrKeyFontStyle" />
                             <ToolbarSpacer/>
                             <SearchField
                                 id="searchFieldHdr"
@@ -114,7 +114,7 @@
                     </uiT:rowSettingsTemplate>
                     <uiT:extension>
                         <Toolbar>
-                            <Text text="Component: {ui>/activeCompDisplay} ( {counts>/detail} Variables )" class="selHdrKeyFontStyle" />
+                            <Text text="Component: {ui>/activeCompDisplay} ( {counts>/detail} Variable/s )" class="selHdrKeyFontStyle" />
                             <ToolbarSpacer/>
                             <SearchField
                                 id="searchFieldDtl"

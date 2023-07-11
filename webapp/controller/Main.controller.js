@@ -10,11 +10,12 @@ sap.ui.define([
     'sap/m/ColumnListItem',
     'sap/m/Label',
     "../js/TableValueHelp",
+    "../js/TableFilter",
 ],
     /**
      * @param {typeof sap.ui.core.mvc.Controller} Controller
      */
-    function (Controller,JSONModel,MessageBox,Common,Filter,FilterOperator,HashChanger,Token,ColumnListItem,Label,TableValueHelp) {
+    function (Controller,JSONModel,MessageBox,Common,Filter,FilterOperator,HashChanger,Token,ColumnListItem,Label,TableValueHelp,TableFilter) {
         "use strict";
 
         var me;
@@ -39,6 +40,9 @@ sap.ui.define([
                 this._sActiveTable = "headerTab";
                 this._oModel = this.getOwnerComponent().getModel();
                 this._tableValueHelp = TableValueHelp;
+                this._tableFilter = TableFilter;
+                this._colFilters = {};
+
                 Common.openLoadingDialog(this);
 
                 this.getView().setModel(new JSONModel({
@@ -304,8 +308,9 @@ sap.ui.define([
                         me.getView().getModel("counts").setProperty("/header", oData.results.length);
                         me.setActiveRowHighlight("headerTab");
 
-                        if (me._aColFilters.length > 0) { me.setColumnFilters("headerTab"); }
+                        // if (me._aColFilters.length > 0) { me.setColumnFilters("headerTab"); }
                         if (me._aColSorters.length > 0) { me.setColumnSorters("headerTab"); }
+                        TableFilter.applyColFilters("headerTab", me);
                     },
                     error: function (err) { 
                         Common.closeProcessingDialog(me);
@@ -341,8 +346,9 @@ sap.ui.define([
                         me.getView().getModel("counts").setProperty("/detail", oData.results.length);
                         me.setActiveRowHighlight("detailTab");
 
-                        if (me._aColFilters.length > 0) { me.setColumnFilters("detailTab"); }
+                        // if (me._aColFilters.length > 0) { me.setColumnFilters("detailTab"); }
                         if (me._aColSorters.length > 0) { me.setColumnSorters("detailTab"); }
+                        TableFilter.applyColFilters("detailTab", me);
 
                         Common.closeProcessingDialog(me);
                     },
@@ -487,7 +493,7 @@ sap.ui.define([
                         template: oText,
                         width: sColumnWidth + "px",
                         sortProperty: sColumnId,
-                        filterProperty: sColumnId,
+                        // filterProperty: sColumnId,
                         autoResizable: true,
                         visible: sColumnVisible,
                         sorted: sColumnSorted,
@@ -495,6 +501,8 @@ sap.ui.define([
                         sortOrder: ((sColumnSorted === true) ? sColumnSortOrder : "Ascending")
                     });                    
                 });
+
+                TableFilter.updateColumnMenu(sTabId, this);
 
                 // oColumns.forEach(item => {
                 //     var aFilterableColumns = [];
@@ -1286,9 +1294,8 @@ sap.ui.define([
                 if (this._dataMode === "NEW" || this._dataMode === "EDIT") {
                     var aNewRows = this.byId(this._sActiveTable).getModel().getData().rows.filter(item => item.NEW === true);
                     var aEditedRows = this.byId(this._sActiveTable).getModel().getData().rows.filter(item => item.EDITED === true && item.NEW !== true);
-    
-                    console.log(aNewRows);
-                    console.log(aEditedRows);
+                    // console.log(aNewRows);
+                    // console.log(aEditedRows);
 
                     if (aNewRows.length > 0) {
                         if (this._validationErrors.length === 0) {
@@ -1335,7 +1342,7 @@ sap.ui.define([
                                 })
     
                                 if (this._sActiveTable === "detailTab") param["COSTCOMPCD"] = this.getView().getModel("ui").getData().activeComp;
-                                console.log(entitySet, param)
+                                // console.log(entitySet, param)
                                 this._oModel.create(entitySet, param, mParameters);
                             })
     
@@ -2601,7 +2608,7 @@ sap.ui.define([
 
             setActiveRowHighlight(sTableId) {
                 var oTable = this.byId(sTableId !== undefined && sTableId !== "" ? sTableId : this._sActiveTable);
-                
+
                 setTimeout(() => {
                     var iActiveRowIndex = oTable.getModel().getData().rows.findIndex(item => item.ACTIVE === "X");
 
@@ -2612,6 +2619,46 @@ sap.ui.define([
                         else row.removeStyleClass("activeRow");
                     })                    
                 }, 100);
+            },
+
+            //******************************************* */
+            // Column Filtering
+            //******************************************* */
+
+            onColFilterClear: function(oEvent) {
+                TableFilter.onColFilterClear(oEvent, this);
+            },
+
+            onColFilterCancel: function(oEvent) {
+                TableFilter.onColFilterCancel(oEvent, this);
+            },
+
+            onColFilterConfirm: function(oEvent) {
+                TableFilter.onColFilterConfirm(oEvent, this);
+            },
+
+            onFilterItemPress: function(oEvent) {
+                TableFilter.onFilterItemPress(oEvent, this);
+            },
+
+            onFilterValuesSelectionChange: function(oEvent) {
+                TableFilter.onFilterValuesSelectionChange(oEvent, this);
+            },
+
+            onSearchFilterValue: function(oEvent) {
+                TableFilter.onSearchFilterValue(oEvent, this);
+            },
+
+            onCustomColFilterChange: function(oEvent) {
+                TableFilter.onCustomColFilterChange(oEvent, this);
+            },
+
+            onSetUseColFilter: function(oEvent) {
+                TableFilter.onSetUseColFilter(oEvent, this);
+            },
+
+            onRemoveColFilter: function(oEvent) {
+                TableFilter.onRemoveColFilter(oEvent, this);
             },
 
             // handleTableValueHelp: async function (oEvent) {

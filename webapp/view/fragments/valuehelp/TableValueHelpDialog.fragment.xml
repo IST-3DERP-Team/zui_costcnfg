@@ -9,8 +9,7 @@
         contentHeight="260px"
         title="Select {/title}"
         resizable="true"
-        draggable="true"
-        afterOpen="afterOpenCreateGMC">
+        draggable="true">
         <endButton>
 			<Button text="Cancel" />
 		</endButton>
