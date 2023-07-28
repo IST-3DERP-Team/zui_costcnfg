@@ -20,4 +20,4 @@ builder:
           name: ZUICOSTCNFG
           description: Costing Configuration
           package: ZPK_LTH_3DERP
-          transport: LTDK908719
+          transport: LTDK910868

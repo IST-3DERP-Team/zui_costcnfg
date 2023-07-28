@@ -502,6 +502,65 @@ sap.ui.define([
                     });                    
                 });
 
+                //date/number sorting
+                oTable.attachSort(function(oEvent) {
+                    var sPath = oEvent.getParameter("column").getSortProperty();
+                    var bDescending = false;
+                    
+                    oTable.getColumns().forEach(col => {
+                        if (col.getSorted()) {
+                            col.setSorted(false);
+                        }
+                    })
+
+                    oEvent.getParameter("column").setSorted(true); //sort icon initiator
+
+                    if (oEvent.getParameter("sortOrder") === "Descending") {
+                        bDescending = true;
+                        oEvent.getParameter("column").setSortOrder("Descending") //sort icon Descending
+                    }
+                    else {
+                        oEvent.getParameter("column").setSortOrder("Ascending") //sort icon Ascending
+                    }
+
+                    var oSorter = new sap.ui.model.Sorter(sPath, bDescending ); //sorter(columnData, If Ascending(false) or Descending(True))
+                    var oColumn = oColumns.filter(fItem => fItem.ColumnName === oEvent.getParameter("column").getProperty("sortProperty"));
+                    var columnType = oColumn[0].DataType;
+
+                    if (columnType === "DATETIME") {
+                        oSorter.fnCompare = function(a, b) {
+                            // parse to Date object
+                            var aDate = new Date(a);
+                            var bDate = new Date(b);
+
+                            if (bDate === null) { return -1; }
+                            if (aDate === null) { return 1; }
+                            if (aDate < bDate) { return -1; }
+                            if (aDate > bDate) { return 1; }
+
+                            return 0;
+                        };
+                    }
+                    else if (columnType === "NUMBER") {
+                        oSorter.fnCompare = function(a, b) {
+                            // parse to Date object
+                            var aNumber = +a;
+                            var bNumber = +b;
+
+                            if (bNumber === null) { return -1; }
+                            if (aNumber === null) { return 1; }
+                            if (aNumber < bNumber) { return -1; }
+                            if (aNumber > bNumber) { return 1; }
+
+                            return 0;
+                        };
+                    }
+                    
+                    oTable.getBinding('rows').sort(oSorter);
+                    // prevent internal sorting by table
+                    oEvent.preventDefault();
+                });
+                
                 TableFilter.updateColumnMenu(sTabId, this);
 
                 // oColumns.forEach(item => {
@@ -1855,6 +1914,17 @@ sap.ui.define([
                             else row.removeStyleClass("activeRow")
                         })
                     }
+
+                    if (oTable.getId().indexOf("headerTab") >= 0) {
+                        var oTableDetail = this.byId("detailTab");
+                        var oColumns = oTableDetail.getColumns();
+
+                        for (var i = 0, l = oColumns.length; i < l; i++) {
+                            if (oColumns[i].getSorted()) {
+                                oColumns[i].setSorted(false);
+                            }
+                        }
+                    }
                 }
                 else if (oEvent.key === "Enter" && oEvent.srcControl.sParentAggregationName === "cells") {
                     if (this._dataMode === "NEW") this.onAddNewRow();
@@ -2126,9 +2196,19 @@ sap.ui.define([
 
                         if (vCurrComp !== vPrevComp) {
                             this.getView().getModel("ui").setProperty("/activeComp", vCurrComp);
+
                             if (this._dataMode === "READ") {
                                 this.getView().getModel("ui").setProperty("/activeCompDisplay", vCurrComp);
                                 this.getDetailData(false);
+                            }
+
+                            var oTableDetail = this.byId("detailTab");
+                            var oColumns = oTableDetail.getColumns();
+
+                            for (var i = 0, l = oColumns.length; i < l; i++) {
+                                if (oColumns[i].getSorted()) {
+                                    oColumns[i].setSorted(false);
+                                }
                             }
                         }
 
