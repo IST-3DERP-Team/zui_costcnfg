@@ -135,6 +135,11 @@ sap.ui.define([
                 this.byId("detailTab").addEventDelegate(oTableEventDelegate);
                 this.getColumnProp();
 
+                this.byId("headerTab").attachBrowserEvent("mousemove", function(oEvent) {
+                    //get your model and do whatever you want:
+                    console.log("mouseenter")
+                });
+
                 this._oModel.read('/HeaderSet', {
                     success: function (oData) {
                         if (oData.results.length > 0) {
@@ -870,8 +875,6 @@ sap.ui.define([
                                         type: "Text",
                                         showValueHelp: true,
                                         valueHelpRequest: TableValueHelp.handleTableValueHelp.bind(this),
-                                        // valueHelpRequest: this.handleValueHelp.bind(this),
-                                        // valueHelpRequest: this.onValueHelpRequested.bind(this),
                                         showSuggestion: true,
                                         maxSuggestionWidth: ci.ValueHelp["SuggestionItems"].additionalText !== undefined ? ci.ValueHelp["SuggestionItems"].maxSuggestionWidth : "1px",
                                         suggestionItems: {
@@ -884,7 +887,6 @@ sap.ui.define([
                                             }),
                                             templateShareable: false
                                         },
-                                        // suggest: this.handleSuggestion.bind(this),
                                         change: this.handleValueHelpChange.bind(this)
                                     })
 
@@ -907,27 +909,6 @@ sap.ui.define([
                                     oInput.addEventDelegate(oInputEventDelegate);
 
                                     col.setTemplate(oInput);
-
-                                    // col.setTemplate(new sap.m.Input({
-                                    //     type: "Text",
-                                    //     value: "{" + sColName + "}",
-                                    //     showValueHelp: true,
-                                    //     valueHelpRequest: this.handleValueHelp.bind(this),
-                                    //     showSuggestion: true,
-                                    //     maxSuggestionWidth: ci.ValueHelp["SuggestionItems"].additionalText !== undefined ? ci.ValueHelp["SuggestionItems"].maxSuggestionWidth : "1px",
-                                    //     suggestionItems: {
-                                    //         path: ci.ValueHelp["SuggestionItems"].path,
-                                    //         length: 10000,
-                                    //         template: new sap.ui.core.ListItem({
-                                    //             key: ci.ValueHelp["SuggestionItems"].text,
-                                    //             text: ci.ValueHelp["SuggestionItems"].text,
-                                    //             additionalText: ci.ValueHelp["SuggestionItems"].additionalText !== undefined ? ci.ValueHelp["SuggestionItems"].additionalText : '',
-                                    //         }),
-                                    //         templateShareable: false
-                                    //     },
-                                    //     // suggest: this.handleSuggestion.bind(this),
-                                    //     change: this.handleValueHelpChange.bind(this)
-                                    // }));                                   
                                 }
                                 else if (ci.DataType === "DATETIME") {
                                     if (this._sActiveTable === "costHdrTab" && sColName === "CSDATE") {
@@ -2730,6 +2711,7 @@ sap.ui.define([
 
             onInputKeyDown(oEvent) {
                 if (oEvent.key === "ArrowUp" || oEvent.key === "ArrowDown") {
+                    //prevent increase/decrease of number value
                     oEvent.preventDefault();
                     
                     var sTableId = oEvent.srcControl.oParent.oParent.sId;
@@ -2743,6 +2725,9 @@ sap.ui.define([
                     var iFirstVisibleRowIndex = oTable.getFirstVisibleRow();
                     var iVisibleRowCount = oTable.getVisibleRowCount();
 
+                    oTable.getModel().setProperty(oEvent.srcControl.oParent.getBindingContext().sPath + "/" + oEvent.srcControl.getBindingInfo("value").parts[0].path, oEvent.srcControl.getValue());
+
+                    //get active row (arrow down)
                     oTable.getBinding("rows").aIndices.forEach((item, index) => {
                         if (item === sCurrentRowIndex) { sCurrentRow = index; }
                         if (sCurrentRow !== -1 && sActiveRow === -1) { 
@@ -2751,8 +2736,10 @@ sap.ui.define([
                         }
                     })
                     
+                    //clear active row
                     oTable.getModel().getData().rows.forEach(row => row.ACTIVE = "");
 
+                    //get next row to focus and active row (arrow up)
                     if (oEvent.key === "ArrowUp") { 
                         if (sCurrentRow !== 0) {
                             sActiveRow = oTable.getBinding("rows").aIndices.filter((fItem, fIndex) => fIndex === (sCurrentRow - 1))[0];
@@ -2767,8 +2754,10 @@ sap.ui.define([
                         sNextRow = sCurrentRow + 1;
                     }
 
+                    //set active row
                     oTable.getModel().setProperty("/rows/" + sActiveRow + "/ACTIVE", "X");
 
+                    //auto-scroll up/down
                     if (oEvent.key === "ArrowDown" && (sNextRow + 1) < oTable.getModel().getData().rows.length && (sNextRow + 1) > iVisibleRowCount) {
                         oTable.setFirstVisibleRow(iFirstVisibleRowIndex + 1);
                     }   
@@ -2776,6 +2765,7 @@ sap.ui.define([
                         oTable.setFirstVisibleRow(iFirstVisibleRowIndex - 1);
                     }
 
+                    //get the cell to focus
                     oTable.getRows()[sCurrentRow].getCells().forEach((cell, index) => {
                         if (cell.getBindingInfo("value") !== undefined) {
                             if (cell.getBindingInfo("value").parts[0].path === sColumnName) { sColumnIndex = index; }
@@ -2786,12 +2776,19 @@ sap.ui.define([
                         sNextRow = sNextRow === iVisibleRowCount ? sNextRow - 1 : sNextRow;
                     }
 
+                    //set focus on cell
                     setTimeout(() => {
                         oTable.getRows()[sNextRow].getCells()[sColumnIndex].focus();
+                        oTable.getRows()[sNextRow].getCells()[sColumnIndex].getFocusDomRef().select();
                     }, 100);
 
+                    //set row highlight
                     this.setActiveRowHighlight();
                 }
+            },
+
+            onKeyDown(oEvent) {           
+                console.log(oEvent);
             },
 
             //******************************************* */
