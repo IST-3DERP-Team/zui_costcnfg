@@ -33,6 +33,24 @@
                     "annotations": [],
                     "localUri": "localService/ZGW_3DERP_COMMON_SRV/metadata.xml"
                 }
+            },
+            "ZVB_3DERP_COSTCNFG_FILTERS_CDS_Annotation": {
+                "uri": "/destinations/LTD888_S4HANA2022/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZVB_3DERP_COSTCNFG_FILTERS_C_VAN',Version='0001')/$value/",
+                "type": "ODataAnnotation",
+                "settings": {
+                    "localUri": "localService/ZVB_3DERP_COSTCNFG_FILTERS_CDS/ZVB_3DERP_COSTCNFG_FILTERS_CDS_Annotation.xml"
+                }
+            },
+            "ZVB_3DERP_COSTCNFG_FILTERS_CDS": {
+                "uri": "/sap/opu/odata/sap/ZVB_3DERP_COSTCNFG_FILTERS_CDS",
+                "type": "OData",
+                "settings": {
+                    "annotations": [
+                        "ZVB_3DERP_COSTCNFG_FILTERS_CDS_Annotation"
+                    ],
+                    "localUri": "localService/ZVB_3DERP_COSTCNFG_FILTERS_CDS/metadata.xml",
+                    "odataVersion": "2.0"
+                }
             }
         }
     },
@@ -93,7 +111,7 @@
         },
         "contentDensities": {
             "compact": true,
-            "cozy": true
+            "cozy": false
         },
         "models": {
             "i18n": {
@@ -118,6 +136,18 @@
                     "defaultBindingMode": "TwoWay",
                     "defaultCountMode": "Inline",
                     "refreshAfterChange": false
+                }
+            },
+            "ZVB_3DERP_COSTCNFG_FILTERS_CDS": {
+                "dataSource": "ZVB_3DERP_COSTCNFG_FILTERS_CDS",
+                "preload": true,
+                "settings": {
+                    "defaultBindingMode": "TwoWay",
+                    "defaultCountMode": "Inline",
+                    "refreshAfterChange": false,
+                    "metadataUrlParams": {
+                        "sap-value-list": "none"
+                    }
                 }
             }
         },

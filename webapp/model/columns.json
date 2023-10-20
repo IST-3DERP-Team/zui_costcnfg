@@ -1,27 +1,39 @@
 {
     "header": [
-        {"ColumnName": "COSTCOMPCD", 
+        {"ColumnName": "COSTCOMPCD", "TextFormatMode": "ValueKey",
             "ValueHelp": {"show": true, "items": {"path": "COMPONENT_MODEL", "value": "COSTCOMPCD", "text": "COMPDESC"},
                 "SuggestionItems": {"path": "COMPONENT_MODEL>/", "text": "{COMPONENT_MODEL>COSTCOMPCD}", "additionalText": "{COMPONENT_MODEL>COMPDESC}", "maxSuggestionWidth": "500px"},
                 "columns": "tvh_compcostcd"
             }
         },
-        {"ColumnName": "COMPANYCD", 
-            "ValueHelp": {"show": true, "items": {"path": "COMPANY_MODEL", "value": "COMPANYCD", "text": "COMPANYCD"},
-                "SuggestionItems": {"path": "COMPANY_MODEL>/", "text": "{COMPANY_MODEL>COMPANYCD}", "maxSuggestionWidth": "300px"},
+        {"ColumnName": "COMPANYCD", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "COMPANY_MODEL", "value": "COMPANYCD", "text": "DESCRIPTION"},
+                "SuggestionItems": {"path": "COMPANY_MODEL>/", "text": "{COMPANY_MODEL>COMPANYCD}", "additionalText": "{COMPANY_MODEL>DESCRIPTION}", "maxSuggestionWidth": "300px"},
                 "columns": "tvh_companycd"
             }
         },
-        {"ColumnName": "PLANTCD", 
-            "ValueHelp": {"show": true, "items": {"path": "PLANT_MODEL", "value": "PLANTCD", "text": "PLANTCD"},
-                "SuggestionItems": {"path": "PLANT_MODEL>/", "text": "{PLANT_MODEL>PLANTCD}", "maxSuggestionWidth": "300px"},
+        {"ColumnName": "PLANTCD", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "PLANT_MODEL", "value": "PLANTCD", "text": "DESCRIPTION"},
+                "SuggestionItems": {"path": "PLANT_MODEL>/", "text": "{PLANT_MODEL>PLANTCD}", "additionalText": "{PLANT_MODEL>DESCRIPTION}", "maxSuggestionWidth": "350px"},
                 "columns": "tvh_plantcd"
             }
         },
-        {"ColumnName": "SALESTERM", 
-            "ValueHelp": {"show": true, "items": {"path": "SALESTERM_MODEL", "value": "INCO1", "text": "INCO1" },
-                "SuggestionItems": {"path": "SALESTERM_MODEL>/", "text": "{SALESTERM_MODEL>INCO1}", "maxSuggestionWidth": "300px"},
+        {"ColumnName": "SALESTERM", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "SALESTERM_MODEL", "value": "SALESTERM", "text": "DESCRIPTION" },
+                "SuggestionItems": {"path": "SALESTERM_MODEL>/", "text": "{SALESTERM_MODEL>SALESTERM}", "additionalText": "{SALESTERM_MODEL>DESCRIPTION}", "maxSuggestionWidth": "300px"},
                 "columns": "tvh_salesterm"
+            }
+        },
+        {"ColumnName": "CUSTGRP", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "CUSTGRP_MODEL", "value": "CUSTGRP", "text": "DESCRIPTION" },
+                "SuggestionItems": {"path": "CUSTGRP_MODEL>/", "text": "{CUSTGRP_MODEL>CUSTGRP}", "additionalText": "{CUSTGRP_MODEL>DESCRIPTION}", "maxSuggestionWidth": "300px"},
+                "columns": "tvh_custgrp"
+            }
+        },
+        {"ColumnName": "WVTYP", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "WVTYP_MODEL", "value": "ATTRIBCD", "text": "DESCRIPTION" },
+                "SuggestionItems": {"path": "WVTYP_MODEL>/", "text": "{WVTYP_MODEL>ATTRIBCD}", "additionalText": "{WVTYP_MODEL>DESCRIPTION}", "maxSuggestionWidth": "300px"},
+                "columns": "tvh_wvtyp"
             }
         },
         {"ColumnName": "STATUSCDCS", "TextFormatMode": "ValueKey",
@@ -32,17 +44,28 @@
         }
     ],
     "tvh_compcostcd": [
-        {"ColumnName": "COSTCOMPCD", "DataType": "STRING", "ColumnWidth": "200px", "Visible": true, "Key": true, "Value": true},
-        {"ColumnName": "COMPDESC", "DataType": "STRING", "ColumnWidth": "200px", "Visible": true, "Key": false, "Value": false}
+        {"ColumnName": "COSTCOMPCD", "DataType": "STRING", "ColumnWidth": "150px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "COMPDESC", "DataType": "STRING", "ColumnWidth": "250px", "Visible": true, "Key": false, "Value": true}
     ],    
     "tvh_companycd": [
-        {"ColumnName": "COMPANYCD", "DataType": "STRING", "ColumnWidth": "340px", "Visible": true, "Key": true, "Value": true}
+        {"ColumnName": "COMPANYCD", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true}
     ],
     "tvh_plantcd": [
-        {"ColumnName": "PLANTCD", "DataType": "STRING", "ColumnWidth": "340px", "Visible": true, "Key": true, "Value": true}
+        {"ColumnName": "PLANTCD", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true}
     ],
     "tvh_salesterm": [
-        {"ColumnName": "INCO1", "DataType": "STRING", "ColumnWidth": "340px", "Visible": true, "Key": true, "Value": true}
+        {"ColumnName": "SALESTERM", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true}
+    ],
+    "tvh_custgrp": [
+        {"ColumnName": "CUSTGRP", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true}
+    ],
+    "tvh_wvtyp": [
+        {"ColumnName": "ATTRIBCD", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true}
     ],
     "tvh_statuscdcs": [
         {"ColumnName": "STATUSCD", "DataType": "STRING", "ColumnWidth": "200px", "Visible": true, "Key": true, "Value": false},

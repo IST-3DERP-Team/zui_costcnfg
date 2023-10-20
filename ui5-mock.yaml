@@ -15,9 +15,13 @@ server:
           url: https://ui5.sap.com
         backend:
           - path: /sap
-            url: http://159.138.39.203:8000
+            url: http://190.92.230.65:8000
             client: "888"
-            destination: LTD888
+            destination: LTD888_S4HANA2022
+          - path: /sap
+            url: http://190.92.230.65:8000
+            client: "888"
+            destination: LTD888_S4HANA2022
     - name: fiori-tools-appreload
       afterMiddleware: compression
       configuration:
@@ -30,11 +34,15 @@ server:
         mountPath: /
         services:
           - urlPath: /sap/opu/odata/sap/ZGW_3DERP_COSTCNFG_SRV/
-            metadataPath: ./webapp/localService/mainService/metadata.xml
-            mockdataPath: ./webapp/localService/mainService/data
             generateMockData: true
+            metadataXmlPath: ./webapp/localService/mainService/metadata.xml
+            mockdataRootPath: ./webapp/localService/mainService/data
           - urlPath: /sap/opu/odata/sap/ZGW_3DERP_COMMON_SRV/
             generateMockData: true
             metadataXmlPath: ./webapp/localService/ZGW_3DERP_COMMON_SRV/metadata.xml
             mockdataRootPath: ./webapp/localService/ZGW_3DERP_COMMON_SRV/mockdata
+          - urlPath: /sap/opu/odata/sap/ZVB_3DERP_COSTCNFG_FILTERS_CDS
+            metadataPath: ./webapp/localService/ZVB_3DERP_COSTCNFG_FILTERS_CDS/metadata.xml
+            mockdataPath: ./webapp/localService/ZVB_3DERP_COSTCNFG_FILTERS_CDS/mockdata
+            generateMockData: true
         annotations: []

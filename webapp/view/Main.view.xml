@@ -4,6 +4,7 @@
     displayBlock="true"
     xmlns="sap.m"
     height="100%"
+    xmlns:smartfilterbar="sap.ui.comp.smartfilterbar"
     xmlns:uiL="sap.ui.layout"
     xmlns:uiT="sap.ui.table">
     <Page id="page" enableScrolling="false" class="sapUiNoContentPadding" showHeader="false">
@@ -18,9 +19,107 @@
         </dependents>
         <content>
             <VBox fitContainer="true" class="sidePadding">
+                <smartfilterbar:SmartFilterBar id="smartFilterBar" entitySet="ZVB_3DERP_COSTCNFG_FILTERS" search="onSearch" persistencyKey="3DERP_CCPKey" filterContainerWidth="15rem" showClearButton="true" showClearOnFB="true">
+                    <!-- <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="SBU" label="{ddtext>/SBU}" groupId="_BASIC" mandatory="mandatory" width="50px" class="mandatoryFontColor">
+                            <smartfilterbar:customControl>
+                                <ComboBox id="cboxSBU"
+                                    selectedKey="{ui>/sbu}"
+                                    change="onSBUChange"
+                                    items="{
+                                        path: '/ZVB_3DERP_SBU_SH',
+                                        templateShareable: false
+                                    }">
+                                    <core:Item key="{SBU}" text="{SBU}" />
+                                </ComboBox>                                  
+                            </smartfilterbar:customControl>
+                        </smartfilterbar:ControlConfiguration>
+                    </smartfilterbar:controlConfiguration> -->
+
+                    <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="COSTCOMPCD" label="{ddtext>/COSTCOMPCD}" groupId="_BASIC" displayBehaviour="descriptionAndId" preventInitialDataFetchInValueHelpDialog="false" width="300px" />
+                    </smartfilterbar:controlConfiguration>
+
+                    <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="EFFECTDT" label="{ddtext>/EFFECTDT}" groupId="_BASIC">
+                            <smartfilterbar:customControl>
+                                <DateRangeSelection id="EFFECTDTDatePicker" displayFormat="MM/dd/yyyy" valueFormat="MM/dd/yyyy" />
+                            </smartfilterbar:customControl>
+                        </smartfilterbar:ControlConfiguration>
+                    </smartfilterbar:controlConfiguration>
+
+                    <!-- <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="EFFECTDT" label="{ddtext>/EFFECTDT}" groupId="_BASIC" preventInitialDataFetchInValueHelpDialog="false" />
+                    </smartfilterbar:controlConfiguration> -->
+                    <!-- <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="SHIPTOPLANT" label="{ddtext>/SHIPTOPLANT}" groupId="_BASIC" preventInitialDataFetchInValueHelpDialog="false" />
+                    </smartfilterbar:controlConfiguration> -->
+                    <!-- <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="PURCHPLANT" label="{ddtext>/PURCHPLANT}" groupId="_BASIC" preventInitialDataFetchInValueHelpDialog="false" />
+                    </smartfilterbar:controlConfiguration>
+                    <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="PURCHGRP" label="{ddtext>/PURCHGRP}" groupId="_BASIC" preventInitialDataFetchInValueHelpDialog="false" />
+                    </smartfilterbar:controlConfiguration>
+                    <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration id="filterVendor" key="VENDOR" label="{ddtext>/VENDOR}" groupId="_BASIC" displayBehaviour="descriptionAndId"
+                            preventInitialDataFetchInValueHelpDialog="false"> 
+                        </smartfilterbar:ControlConfiguration>
+                    </smartfilterbar:controlConfiguration>
+
+                    <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="MATERIALGRP" label="{ddtext>/MATERIALGRP}" groupId="_BASIC" displayBehaviour="descriptionAndId" preventInitialDataFetchInValueHelpDialog="false" />   
+                    </smartfilterbar:controlConfiguration>
+
+                    <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="MATERIALTYPE" label="{ddtext>/MATERIALTYPE}" groupId="_BASIC" preventInitialDataFetchInValueHelpDialog="false" width="15rem" >
+                            <smartfilterbar:customControl>
+                                <MultiInput id="multiInputMatTyp"
+                                    
+                                    change="onCustomSmartFilterValueHelpChange"
+                                    valueHelpRequest=".onCustomSmartFilterValueHelp"
+                                    suggestionRows="{
+                                        path: 'materialType>/results',
+                                        sorter: { path: 'MaterialType' },
+                                        length: 1000,
+                                        templateShareable: false
+                                    }">
+                                    <suggestionColumns>
+                                        <Column>
+                                            <Label text="Material Type"/>
+                                        </Column>
+                                        <Column>
+                                            <Label text="Description"/>
+                                        </Column>
+                                    </suggestionColumns>
+                                    <suggestionRows>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Label text="{materialType>MaterialType}" />
+                                                <Label text="{materialType>Description}" />
+                                            </cells>
+                                        </ColumnListItem>
+                                    </suggestionRows>
+                                </MultiInput>
+                            </smartfilterbar:customControl>
+                        </smartfilterbar:ControlConfiguration>
+                    </smartfilterbar:controlConfiguration>
+
+                    <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="IONUMBER" label="{ddtext>/IONUMBER}" groupId="_BASIC" preventInitialDataFetchInValueHelpDialog="false" width="15rem" />
+                    </smartfilterbar:controlConfiguration>
+                    <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="SEASON" label="{ddtext>/SEASON}" groupId="_BASIC" preventInitialDataFetchInValueHelpDialog="false" />
+                    </smartfilterbar:controlConfiguration> -->
+
+                    <smartfilterbar:layoutData>
+                        <FlexItemData growFactor="0"/>
+                    </smartfilterbar:layoutData>
+                </smartfilterbar:SmartFilterBar>
+        
                 <uiT:Table id="headerTab"
                     class="sapUiTinyMarginBottom sapUiTinyMarginBegin sapUiTinyMarginEnd"
                     visibleRowCountMode="Auto"
+                    minAutoRowCount="1"
                     showColumnVisibilityMenu="true"
                     enableColumnFreeze="true"
                     selectionMode="MultiToggle"
@@ -37,7 +136,7 @@
                         <uiT:RowSettings highlight="{= ${EDITED} === true ? 'Warning' : null}" />
                     </uiT:rowSettingsTemplate>
                     <uiT:extension>
-                        <Toolbar>
+                        <OverflowToolbar>
                             <Text text="{counts>/header} Component/s" class="selHdrKeyFontStyle" />
                             <ToolbarSpacer/>
                             <SearchField
@@ -88,7 +187,34 @@
                                 press="onRefresh"
                                 tooltip="{ddtext>/REFRESH}"
                                 visible="true"/>
-                        </Toolbar>
+                            <Button id="btnFullScreenHdr" 
+                                icon="sap-icon://full-screen"
+                                press="onTableResize"
+                                tooltip="{ddtext>/FULLSCREEN}"
+                                visible="true" >
+                                <customData>
+                                    <core:CustomData key="Max" value="1" />
+                                    <core:CustomData key="TableId" value="headerTab" />
+                                    <core:CustomData key="ButtonIdSuffix" value="Hdr" />
+                                </customData>
+                            </Button>
+                            <Button id="btnExitFullScreenHdr" 
+                                icon="sap-icon://exit-full-screen"
+                                press="onTableResize"
+                                tooltip="{ddtext>/EXITFULLSCREEN}"
+                                visible="false" >
+                                <customData>
+                                    <core:CustomData key="Max" value="0" />
+                                    <core:CustomData key="TableId" value="headerTab" />
+                                    <core:CustomData key="ButtonIdSuffix" value="Hdr" />
+                                </customData>
+                            </Button>
+                            <Button id="btnTest" 
+                                icon="sap-icon://refresh"
+                                press="onTest"
+                                tooltip="{ddtext>/REFRESH}"
+                                visible="false"/>
+                        </OverflowToolbar>
                     </uiT:extension>
                     <uiT:layoutData>
                         <FlexItemData growFactor="1" baseSize="0%"/>
@@ -97,6 +223,7 @@
                 <uiT:Table id="detailTab"
                     class="sapUiTinyMarginBottom sapUiTinyMarginBegin sapUiTinyMarginEnd"
                     visibleRowCountMode="Auto"
+                    minAutoRowCount="1"
                     showColumnVisibilityMenu="true"
                     enableColumnFreeze="true"
                     selectionMode="MultiToggle"
@@ -113,7 +240,7 @@
                         <uiT:RowSettings highlight="{= ${EDITED} === true ? 'Warning' : null}" />
                     </uiT:rowSettingsTemplate>
                     <uiT:extension>
-                        <Toolbar>
+                        <OverflowToolbar>
                             <Text text="Component: {ui>/activeCompDisplay} ( {counts>/detail} Variable/s )" class="selHdrKeyFontStyle" />
                             <ToolbarSpacer/>
                             <SearchField
@@ -159,7 +286,29 @@
                                 press="onRefresh"
                                 tooltip="{ddtext>/REFRESH}"
                                 visible="true"/>
-                        </Toolbar>
+                            <Button id="btnFullScreenDtl" 
+                                icon="sap-icon://full-screen"
+                                press="onTableResize"
+                                tooltip="{ddtext>/FULLSCREEN}"
+                                visible="true" >
+                                <customData>
+                                    <core:CustomData key="Max" value="1" />
+                                    <core:CustomData key="TableId" value="detailTab" />
+                                    <core:CustomData key="ButtonIdSuffix" value="Dtl" />
+                                </customData>
+                            </Button>
+                            <Button id="btnExitFullScreenDtl" 
+                                icon="sap-icon://exit-full-screen"
+                                press="onTableResize"
+                                tooltip="{ddtext>/EXITFULLSCREEN}"
+                                visible="false" >
+                                <customData>
+                                    <core:CustomData key="Max" value="0" />
+                                    <core:CustomData key="TableId" value="detailTab" />
+                                    <core:CustomData key="ButtonIdSuffix" value="Dtl" />
+                                </customData>
+                            </Button>
+                        </OverflowToolbar>
                     </uiT:extension>
                     <uiT:layoutData>
                         <FlexItemData growFactor="1" baseSize="0%"/>

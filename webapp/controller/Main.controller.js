@@ -44,7 +44,14 @@ sap.ui.define([
                 this._tableFilter = TableFilter;
                 this._colFilters = {};
 
-                Common.openLoadingDialog(this);
+                this._oTables = [
+                    { TableId: "headerTab" },
+                    { TableId: "detailTab" }
+                ]
+
+                // Common.openLoadingDialog(this);
+
+                this.setSmartFilterModel();
 
                 this.getView().setModel(new JSONModel({
                     activeComp: "",
@@ -98,6 +105,8 @@ sap.ui.define([
                 oDDTextParam.push({CODE: "INFO_INPUT_REQD_FIELDS"}); 
                 oDDTextParam.push({CODE: "INFO_NO_DATA_MODIFIED"}); 
                 oDDTextParam.push({CODE: "INFO_DATA_COPIED"}); 
+                oDDTextParam.push({CODE: "COSTCOMPCD"}); 
+                oDDTextParam.push({CODE: "EFFECTDT"}); 
 
                 oModel.create("/CaptionMsgSet", { CaptionMsgItems: oDDTextParam  }, {
                     method: "POST",
@@ -135,81 +144,83 @@ sap.ui.define([
                 this.byId("detailTab").addEventDelegate(oTableEventDelegate);
                 this.getColumnProp();
 
-                this.byId("headerTab").attachBrowserEvent("mousemove", function(oEvent) {
-                    //get your model and do whatever you want:
-                    console.log("mouseenter")
-                });
+                // this.byId("headerTab").attachBrowserEvent("mousemove", function(oEvent) {
+                //     //get your model and do whatever you want:
+                //     console.log("mouseenter")
+                // });
 
-                this._oModel.read('/HeaderSet', {
-                    success: function (oData) {
-                        if (oData.results.length > 0) {
-                            var vComp = "";
-                            oData.results.sort((a,b) => (a.SEQ > b.SEQ ? 1 : -1));
-
-                            oData.results.forEach((item, index) => {  
-                                if (item.EFFECTDT !== null)
-                                    item.EFFECTDT = dateFormat.format(new Date(item.EFFECTDT));
-
-                                if (item.CREATEDDT !== null)
-                                    item.CREATEDDT = dateFormat.format(new Date(item.CREATEDDT));
-    
-                                if (item.UPDATEDDT !== null)
-                                    item.UPDATEDDT = dateFormat.format(new Date(item.UPDATEDDT));
-    
-                                if (index === 0) {
-                                    item.ACTIVE = "X";
-                                    vComp = item.COSTCOMPCD;
-                                    me.getView().getModel("ui").setProperty("/activeComp", item.COSTCOMPCD);
-                                    me.getView().getModel("ui").setProperty("/activeCompDisplay", item.COSTCOMPCD);
-                                }
-                                else item.ACTIVE = "";
-                            });
-
-                            me._oModel.read('/DetailSet', {
-                                urlParameters: {
-                                    "$filter": "COSTCOMPCD eq '" + vComp + "'"
-                                },
-                                success: function (oDataDtl) {
-                                    if (oDataDtl.results.length > 0) {
-                                        oDataDtl.results.forEach((item, index) => {  
-                                            if (item.CREATEDDT !== null)
-                                                item.CREATEDDT = dateFormat.format(new Date(item.CREATEDDT));
+                this.getHeaderData();
                 
-                                            if (item.UPDATEDDT !== null)
-                                                item.UPDATEDDT = dateFormat.format(new Date(item.UPDATEDDT));
+                // this._oModel.read('/HeaderSet', {
+                //     success: function (oData) {
+                //         if (oData.results.length > 0) {
+                //             var vComp = "";
+                //             oData.results.sort((a,b) => (a.SEQ > b.SEQ ? 1 : -1));
+
+                //             oData.results.forEach((item, index) => {  
+                //                 if (item.EFFECTDT !== null)
+                //                     item.EFFECTDT = dateFormat.format(new Date(item.EFFECTDT));
+
+                //                 if (item.CREATEDDT !== null)
+                //                     item.CREATEDDT = dateFormat.format(new Date(item.CREATEDDT));
+    
+                //                 if (item.UPDATEDDT !== null)
+                //                     item.UPDATEDDT = dateFormat.format(new Date(item.UPDATEDDT));
+    
+                //                 if (index === 0) {
+                //                     item.ACTIVE = "X";
+                //                     vComp = item.COSTCOMPCD;
+                //                     me.getView().getModel("ui").setProperty("/activeComp", item.COSTCOMPCD);
+                //                     me.getView().getModel("ui").setProperty("/activeCompDisplay", item.COSTCOMPCD);
+                //                 }
+                //                 else item.ACTIVE = "";
+                //             });
+
+                //             me._oModel.read('/DetailSet', {
+                //                 urlParameters: {
+                //                     "$filter": "COSTCOMPCD eq '" + vComp + "'"
+                //                 },
+                //                 success: function (oDataDtl) {
+                //                     if (oDataDtl.results.length > 0) {
+                //                         oDataDtl.results.forEach((item, index) => {  
+                //                             if (item.CREATEDDT !== null)
+                //                                 item.CREATEDDT = dateFormat.format(new Date(item.CREATEDDT));
                 
-                                            if (index === 0) item.ACTIVE = "X";
-                                            else item.ACTIVE = "";
-                                        });
-                                    }
+                //                             if (item.UPDATEDDT !== null)
+                //                                 item.UPDATEDDT = dateFormat.format(new Date(item.UPDATEDDT));
+                
+                //                             if (index === 0) item.ACTIVE = "X";
+                //                             else item.ACTIVE = "";
+                //                         });
+                //                     }
             
-                                    me.byId("detailTab").getModel().setProperty("/rows", oDataDtl.results);
-                                    me.byId("detailTab").bindRows("/rows");
-                                    me.getView().getModel("counts").setProperty("/detail", oDataDtl.results.length);
-                                    me.setActiveRowHighlight("detailTab");
-                                    Common.closeLoadingDialog(me);
-                                },
-                                error: function (err) {
-                                    Common.closeLoadingDialog(me);
-                                }
-                            })                            
-                        }
-                        else {
-                            me.byId("detailTab").getModel().setProperty("/rows", []);
-                            me.byId("detailTab").bindRows("/rows");
-                            me.getView().getModel("counts").setProperty("/detail", 0);
-                            Common.closeLoadingDialog(me);
-                        }
+                //                     me.byId("detailTab").getModel().setProperty("/rows", oDataDtl.results);
+                //                     me.byId("detailTab").bindRows("/rows");
+                //                     me.getView().getModel("counts").setProperty("/detail", oDataDtl.results.length);
+                //                     me.setActiveRowHighlight("detailTab");
+                //                     Common.closeLoadingDialog(me);
+                //                 },
+                //                 error: function (err) {
+                //                     Common.closeLoadingDialog(me);
+                //                 }
+                //             })                            
+                //         }
+                //         else {
+                //             me.byId("detailTab").getModel().setProperty("/rows", []);
+                //             me.byId("detailTab").bindRows("/rows");
+                //             me.getView().getModel("counts").setProperty("/detail", 0);
+                //             Common.closeLoadingDialog(me);
+                //         }
 
-                        me.byId("headerTab").getModel().setProperty("/rows", oData.results);
-                        me.byId("headerTab").bindRows("/rows");
-                        me.getView().getModel("counts").setProperty("/header", oData.results.length);
-                        me.setActiveRowHighlight("headerTab");
-                    },
-                    error: function (err) { 
-                        Common.closeLoadingDialog(me);
-                    }
-                })
+                //         me.byId("headerTab").getModel().setProperty("/rows", oData.results);
+                //         me.byId("headerTab").bindRows("/rows");
+                //         me.getView().getModel("counts").setProperty("/header", oData.results.length);
+                //         me.setActiveRowHighlight("headerTab");
+                //     },
+                //     error: function (err) { 
+                //         Common.closeLoadingDialog(me);
+                //     }
+                // })
 
                 this._oModel.read('/CompanyVHSet', {
                     async: false,
@@ -243,6 +254,22 @@ sap.ui.define([
                     error: function (err) { }
                 })
 
+                this._oModel.read('/CustGrpVHSet', {
+                    async: false,
+                    success: function (oData) {
+                        me.getView().setModel(new JSONModel(oData.results), "CUSTGRP_MODEL");
+                    },
+                    error: function (err) { }
+                })
+
+                this._oModel.read('/WeaveTypeVHSet', {
+                    async: false,
+                    success: function (oData) {
+                        me.getView().setModel(new JSONModel(oData.results), "WVTYP_MODEL");
+                    },
+                    error: function (err) { }
+                })
+
                 this._oModel.read('/StatusVHSet', {
                     async: false,
                     success: function (oData) {
@@ -263,22 +290,76 @@ sap.ui.define([
                 }
             },
 
+            setSmartFilterModel: function () {
+                var oModel = this.getOwnerComponent().getModel("ZVB_3DERP_COSTCNFG_FILTERS_CDS");               
+                var oSmartFilter = this.getView().byId("smartFilterBar");
+                oSmartFilter.setModel(oModel);
+            },
+
+            addDateFilters: function (aSmartFilter) {
+                //get the date filter of effect date
+                var vEffectDate = this.getView().byId("EFFECTDTDatePicker").getValue();
+                var aFilter = [];
+                
+                if (vEffectDate !== undefined && vEffectDate !== '') {
+                    vEffectDate = vEffectDate.replace(/\s/g, '').toString(); //properly format the date for ABAP
+                    var vEffectDateStr = vEffectDate.split('-');
+                    var vEffectDate1 = vEffectDateStr[0];
+                    var vEffectDate2 = vEffectDateStr[1];
+
+                    if (vEffectDate2 === undefined) {
+                        vEffectDate2 = vEffectDate1;
+                    }
+
+                    var lv_effectDateFilter = new sap.ui.model.Filter({
+                        path: "EFFECTDT",
+                        operator: sap.ui.model.FilterOperator.BT,
+                        value1: vEffectDate1,
+                        value2: vEffectDate2
+                    });
+
+                    aFilter.push(lv_effectDateFilter);
+                    aSmartFilter[0].aFilters.push(new Filter(aFilter, false));
+                }
+            },
+
+            onSearch: function () {
+                // var vSBU = this.getView().byId("cboxSBU").getSelectedKey();
+                // this.getView().getModel("ui").setProperty("/currsbu", vSBU);
+                this.getHeaderData();
+            },
+
             getHeaderData() {
-                // var oTable = this.byId('detailTab');
-                // var oColumns = oTable.getColumns();
-
-                // for (var i = 0, l = oColumns.length; i < l; i++) {
-                //     if (oColumns[i].getFiltered()) {
-                //         oColumns[i].filter("");
-                //     }
-
-                //     if (oColumns[i].getSorted()) {
-                //         oColumns[i].setSorted(false);
-                //     }
-                // }
-
                 Common.openProcessingDialog(me, "Processing...");
+
+                var oSmartFilter = this.getView().byId("smartFilterBar").getFilters();
+                var aFilters = [],
+                    aFilter = [],
+                    aSmartFilter = [];
+
+                // var vSBU = this.getView().getModel("ui").getProperty("/sbu");
+                
+                if (oSmartFilter.length > 0)  {
+                    oSmartFilter[0].aFilters.forEach(item => {
+                        if (item.aFilters === undefined) {
+                            aFilter.push(new Filter(item.sPath, item.sOperator, item.oValue1));
+                        }
+                        else {
+                            aFilters.push(item);
+                        }
+                    })
+
+                    if (aFilter.length > 0) { aFilters.push(new Filter(aFilter, false)); }
+                }
+
+                // aFilters.push(new Filter("SBU", FilterOperator.EQ, vSBU));
+
+                aSmartFilter.push(new Filter(aFilters, true));
+
+                this.addDateFilters(aSmartFilter);
+
                 this._oModel.read('/HeaderSet', {
+                    filters: aSmartFilter,
                     success: function (oData) {
                         if (oData.results.length > 0) {
                             oData.results.sort((a,b) => (a.SEQ > b.SEQ ? 1 : -1));
@@ -307,6 +388,7 @@ sap.ui.define([
                             me.byId("detailTab").getModel().setProperty("/rows", []);
                             me.byId("detailTab").bindRows("/rows");
                             me.getView().getModel("counts").setProperty("/detail", 0);
+                            Common.closeProcessingDialog(me);
                         }
 
                         me.byId("headerTab").getModel().setProperty("/rows", oData.results);
@@ -491,7 +573,7 @@ sap.ui.define([
                                 { path: sColumnId }
                             ]
                         }); 
-                    }
+                    } 
 
                     // var oMenu = new sap.ui.unified.Menu({
                     //     items: new sap.ui.unified.MenuItem({
@@ -835,7 +917,7 @@ sap.ui.define([
                     onkeydown: function(oEvent){
                         me.onInputKeyDown(oEvent);
                     },
-                };
+                }; 
 
                 oTable.getColumns().forEach((col, idx) => {
                     var sColName = "";
@@ -876,7 +958,7 @@ sap.ui.define([
                                         showValueHelp: true,
                                         valueHelpRequest: TableValueHelp.handleTableValueHelp.bind(this),
                                         showSuggestion: true,
-                                        maxSuggestionWidth: ci.ValueHelp["SuggestionItems"].additionalText !== undefined ? ci.ValueHelp["SuggestionItems"].maxSuggestionWidth : "1px",
+                                        maxSuggestionWidth: ci.ValueHelp["SuggestionItems"].additionalText !== undefined ? ci.ValueHelp["SuggestionItems"].maxSuggestionWidth : "100px",
                                         suggestionItems: {
                                             path: ci.ValueHelp["SuggestionItems"].path,
                                             length: 10000,
@@ -1117,11 +1199,6 @@ sap.ui.define([
                     this._aDataBeforeChange = jQuery.extend(true, [], oTable.getModel().getData().rows);
                     this._validationErrors = [];
     
-                    if (oTable.getBinding("rows").aApplicationFilters.length > 0) {
-                        this._aMultiFiltersBeforeChange = this._aFilterableColumns["gmc"].filter(fItem => fItem.value !== "");                   
-                        oTable.getBinding("rows").filter("", "Application");
-                    }
-                    
                     if (oTable.getBinding("rows").aFilters.length > 0) {
                         this._aColFilters = jQuery.extend(true, [], oTable.getBinding("rows").aFilters);
                         // this._aColFilters = oTable.getBinding("rows").aFilters;
@@ -1330,8 +1407,9 @@ sap.ui.define([
                         this.byId(this._sActiveTable).getModel().setProperty("/rows", this._aDataBeforeChange);
                         this.byId(this._sActiveTable).bindRows("/rows");
 
-                        if (this._aColFilters.length > 0) { this.setColumnFilters(this._sActiveTable); }
+                        // if (this._aColFilters.length > 0) { this.setColumnFilters(this._sActiveTable); }
                         if (this._aColSorters.length > 0) { this.setColumnSorters(this._sActiveTable); }
+                        TableFilter.applyColFilters(this._sActiveTable, this);
 
                         this.setRowReadMode();
                         this._dataMode = "READ";
@@ -1496,11 +1574,11 @@ sap.ui.define([
                     }
                     else if (aEditedRows.length > 0) {
                         if (this._validationErrors.length === 0) {                      
-                            var sEntitySet = "/";
+                            var sEntitySet = "";
                             var proceed = true;
     
-                            if (this._sActiveTable === "headerTab") sEntitySet += "HeaderSet(";
-                            else sEntitySet += "DetailSet(";
+                            if (this._sActiveTable === "headerTab") sEntitySet = "HeaderSet(";
+                            else sEntitySet = "DetailSet(";
     
                             this._oModel.setUseBatch(true);
                             this._oModel.setDeferredGroups(["update"]);
@@ -1508,9 +1586,9 @@ sap.ui.define([
                             var mParameters = {
                                 "groupId":"update"
                             }
-    
+
                             Common.openProcessingDialog(me, "Processing...");
-    
+
                             aEditedRows.forEach(item => {
                                 var entitySet = sEntitySet;
                                 var param = {};
@@ -1550,8 +1628,8 @@ sap.ui.define([
     
                                 if (iKeyCount > 1) entitySet = entitySet.substring(0, entitySet.length - 1);
                                 entitySet += ")";
-    
-                                this._oModel.update(entitySet, param, mParameters);
+                                console.log(entitySet, param);
+                                this._oModel.update("/" + encodeURIComponent(entitySet), param, mParameters);
                             })
     
                             if (!proceed) {
@@ -1665,9 +1743,10 @@ sap.ui.define([
                     this.byId(this._sActiveTable).getModel().setProperty("/rows", this._aDataBeforeChange);
                     this.byId(this._sActiveTable).bindRows("/rows");
 
-                    if (this._aColFilters.length > 0) { this.setColumnFilters(this._sActiveTable); }
+                    // if (this._aColFilters.length > 0) { this.setColumnFilters(this._sActiveTable); }
                     if (this._aColSorters.length > 0) { this.setColumnSorters(this._sActiveTable); }
-
+                    TableFilter.applyColFilters(this._sActiveTable, this);
+                    
                     this.setRowReadMode();
                     this._dataMode = "READ";
                     this.setActiveRowHighlightByTableId(this._sActiveTable);
@@ -1693,10 +1772,10 @@ sap.ui.define([
                     var aSelIndices = oTable.getSelectedIndices();
                     var oTmpSelectedIndices = [];
                     var aData = oTable.getModel().getData().rows;
-                    var vEntitySet = "/";
+                    var vEntitySet = "";
     
-                    if (this._sActiveTable === "headerTab") vEntitySet += "HeaderSet(";
-                    else vEntitySet += "DetailSet(";
+                    if (this._sActiveTable === "headerTab") vEntitySet = "HeaderSet(";
+                    else vEntitySet = "DetailSet(";
     
                     this._oModel.setUseBatch(true);
                     this._oModel.setDeferredGroups(["update"]);
@@ -1761,7 +1840,7 @@ sap.ui.define([
                     
                                         console.log(entitySet);
                                         // console.log(param);
-                                        me._oModel.remove(entitySet, mParameters);
+                                        me._oModel.remove("/" + encodeURIComponent(entitySet), mParameters);
                                     })
                 
                                     me._oModel.submitChanges({
@@ -2791,6 +2870,19 @@ sap.ui.define([
                 console.log(oEvent);
             },
 
+            onTableResize: function(oEvent) {
+                this._sActiveTable = oEvent.getSource().data("TableId");
+                
+                var vFullScreen = oEvent.getSource().data("Max") === "1" ? true : false;
+                var vSuffix = oEvent.getSource().data("ButtonIdSuffix");
+                var me = this;
+
+                // this.byId("smartFilterBar").setFilterBarExpanded(!vFullScreen);
+                this.byId("btnFullScreen" + vSuffix).setVisible(!vFullScreen);
+                this.byId("btnExitFullScreen" + vSuffix).setVisible(vFullScreen);
+                this._oTables.filter(fItem => fItem.TableId !== me._sActiveTable).forEach(item => me.byId(item.TableId).setVisible(!vFullScreen));
+            },
+
             //******************************************* */
             // Column Filtering
             //******************************************* */
@@ -2831,6 +2923,39 @@ sap.ui.define([
                 TableFilter.onRemoveColFilter(oEvent, this);
             },
 
+            onTest() {
+                var oCrossAppNavigator = sap.ushell.Container.getService("CrossApplicationNavigation");
+                // var hash = (oCrossAppNavigator && oCrossAppNavigator.hrefForExternal({
+                //     target: {
+                //         semanticObject: "ZSO_3DERP_PUR_PR",
+                //         action: "display&/PRDetail/VER/5000000472/00190"
+                //     }
+                // })) || ""; 
+
+                oCrossAppNavigator.toExternal({
+                    target: {
+                        shellHash: "ZSO_3DERP_PUR_PR-display&/PRDetail/VER/5000000472/00190"
+                    }
+                });
+
+                // sap.ushell.Container.getServiceAsync("CrossApplicationNavigation").then( function (oService) {
+
+                //     oService.hrefForExternalAsync({
+                //         target : {
+                //             semanticObject: "ZSO_3DERP_PUR_PR",
+                //             action: "display&/PRDetail/VER/5000000472/00190"
+                //         }
+                //     }).then( function(sHref) {
+                //         // Place sHref somewhere in the DOM
+                //         console.log(sHref)
+                //         sap.ushell.Container.getService("CrossApplicationNavigation").toExternal({
+                //             target: {
+                //                 shellHash: sHref
+                //             }
+                //         });
+                //     });
+                //  });
+            }
             // handleTableValueHelp: async function (oEvent) {
             //     var oSource = oEvent.getSource();
             //     var sModel = this._sActiveTable.replace("Tab","");
