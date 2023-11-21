@@ -250,9 +250,25 @@ sap.ui.define([
 
         handleTableValueHelpSelect: function (oEvent) {
             var sRowPath = oEvent.getParameters().rowBindingContext.sPath;
-            this._inputSource.setSelectedKey(oEvent.getSource().getModel().getProperty(sRowPath + "/VHKey"));
             this._inputSource.setValueState("None");
-            this._tableValueHelpDialog.close();                
+            this._tableValueHelpDialog.close();
+            // console.log(this._inputSource);
+
+            if (this._inputSource.getProperty("textFormatMode") === "ValueKey") {
+                this._inputSource.setValue(oEvent.getSource().getModel().getProperty(sRowPath + "/VHValue") + " (" + oEvent.getSource().getModel().getProperty(sRowPath + "/VHKey") + ")")
+            }
+            else if (this._inputSource.getProperty("textFormatMode") === "KeyValue") {
+                this._inputSource.setValue(oEvent.getSource().getModel().getProperty(sRowPath + "/VHKey") + " (" + oEvent.getSource().getModel().getProperty(sRowPath + "/VHValue") + ")")
+            }
+            else if (this._inputSource.getProperty("textFormatMode") === "Value") {
+                this._inputSource.setValue(oEvent.getSource().getModel().getProperty(sRowPath + "/VHValue"))
+            }
+            else if (this._inputSource.getProperty("textFormatMode") === "Key") {
+                this._inputSource.setValue(oEvent.getSource().getModel().getProperty(sRowPath + "/VHKey"))
+            }
+
+            this._inputSource.setSelectedKey(oEvent.getSource().getModel().getProperty(sRowPath + "/VHKey"));
+
         }, 
 
         handleTableValueHelpCancel: function() {

@@ -107,6 +107,14 @@ sap.ui.define([
                 oDDTextParam.push({CODE: "INFO_DATA_COPIED"}); 
                 oDDTextParam.push({CODE: "COSTCOMPCD"}); 
                 oDDTextParam.push({CODE: "EFFECTDT"}); 
+                oDDTextParam.push({CODE: "COMPDESC"}); 
+                oDDTextParam.push({CODE: "COMPANYCD"}); 
+                oDDTextParam.push({CODE: "DESCRIPTION"}); 
+                oDDTextParam.push({CODE: "PLANTCD"}); 
+                oDDTextParam.push({CODE: "SALESTERM"}); 
+                oDDTextParam.push({CODE: "CUSTGRP"}); 
+                oDDTextParam.push({CODE: "ATTRIBCD"}); 
+                oDDTextParam.push({CODE: "STATUSCD"});
 
                 oModel.create("/CaptionMsgSet", { CaptionMsgItems: oDDTextParam  }, {
                     method: "POST",
@@ -538,7 +546,8 @@ sap.ui.define([
 
                     var oText = new sap.m.Text({
                         wrapping: false,
-                        tooltip: sColumnDataType === "BOOLEAN" ? "" : "{" + sColumnId + "}"
+                        tooltip: sColumnDataType === "BOOLEAN" ? "" : "{" + sColumnId + "}",
+                        // width: (+sColumnWidth-15) + "px"
                     })
 
                     var oColProp = me._aColumns[sTabId.replace("Tab", "")].filter(fItem => fItem.ColumnName === sColumnId);
@@ -551,6 +560,12 @@ sap.ui.define([
                             ],  
                             formatter: function(sKey) {
                                 var oValue = me.getView().getModel(oColProp[0].ValueHelp["items"].path).getData().filter(v => v[oColProp[0].ValueHelp["items"].value] === sKey);
+                                                      
+                                // this.removeStyleClass("green");
+
+                                // if (sKey === "COMM") {
+                                //     this.addStyleClass("green");
+                                // }
                                 
                                 if (oValue && oValue.length > 0) {
                                     if (oColProp[0].TextFormatMode === "Value") {
@@ -575,6 +590,18 @@ sap.ui.define([
                         }); 
                     } 
 
+                    // if (sColumnId === "COSTCOMPCD") {
+                    //     oText.bindProperty("text", "COSTCOMPCD", function(cellValue) {
+                    //         this.removeStyleClass('green');
+
+                    //         if (cellValue === "COMM") {
+                    //             this.addStyleClass("green");
+                    //         }
+
+                    //         return cellValue;
+                    //     })
+                    // }
+
                     // var oMenu = new sap.ui.unified.Menu({
                     //     items: new sap.ui.unified.MenuItem({
                     //         text: "My custom menu entry",
@@ -584,6 +611,7 @@ sap.ui.define([
 
                     return new sap.ui.table.Column({
                         id: sTabId.replace("Tab", "") + "Col" + sColumnId,
+                        name: sColumnId,
                         label: new sap.m.Text({ text: sColumnLabel }),
                         template: oText,
                         width: sColumnWidth + "px",
@@ -594,7 +622,7 @@ sap.ui.define([
                         sorted: sColumnSorted,
                         hAlign: sColumnDataType === "NUMBER" ? "End" : sColumnDataType === "BOOLEAN" ? "Center" : "Begin",
                         sortOrder: ((sColumnSorted === true) ? sColumnSortOrder : "Ascending")
-                    });                    
+                    });
                 });
 
                 //date/number sorting
@@ -952,23 +980,77 @@ sap.ui.define([
                                             }
                                         }
                                     }
-                                    
+
+                                    // var oInput = new sap.m.Input({
+                                    //     type: "Text",
+                                    //     showValueHelp: true,
+                                    //     valueHelpRequest: TableValueHelp.handleTableValueHelp.bind(this),
+                                    //     showSuggestion: true,
+                                    //     maxSuggestionWidth: ci.ValueHelp["SuggestionItems"].additionalText !== undefined ? ci.ValueHelp["SuggestionItems"].maxSuggestionWidth : "100px",
+                                    //     suggestionItems: {
+                                    //         path: ci.ValueHelp["SuggestionItems"].path,
+                                    //         length: 10000,
+                                    //         template: new sap.ui.core.ListItem({
+                                    //             key: ci.ValueHelp["SuggestionItems"].text,
+                                    //             text: sSuggestItemText,
+                                    //             additionalText: sSuggestItemAddtlText,
+                                    //         }),
+                                    //         templateShareable: false
+                                    //     },
+                                    //     change: this.handleValueHelpChange.bind(this)
+                                    // })
+
+                                    var oColumns = [], oCells = [];
+                                        
+                                    //assign first cell to key/code
+                                    this._oModelColumns[ci.ValueHelp["columns"]].filter(fItem => fItem.Key === true).forEach(item => {
+                                        oColumns.push(new sap.m.Column({
+                                            header: new sap.m.Label({ text: this.getView().getModel("ddtext").getData()[item.ColumnName] })
+                                        }))
+
+                                        oCells.push(new sap.m.Text({
+                                            text: { path: ci.ValueHelp["items"].path + ">" + item.ColumnName }
+                                        }))
+                                    })
+
+                                    //assign second cell to description
+                                    this._oModelColumns[ci.ValueHelp["columns"]].filter(fItem => fItem.Value === true).forEach(item => {
+                                        oColumns.push(new sap.m.Column({
+                                            header: new sap.m.Label({ text: this.getView().getModel("ddtext").getData()[item.ColumnName] })
+                                        }))
+
+                                        oCells.push(new sap.m.Text({
+                                            text: { path: ci.ValueHelp["items"].path + ">" + item.ColumnName }
+                                        }))
+                                    })
+
+                                    //add other info
+                                    this._oModelColumns[ci.ValueHelp["columns"]].filter(fItem => fItem.Visible === true && fItem.Key === false && fItem.Value === false).forEach(item => {
+                                        oColumns.push(new sap.m.Column({
+                                            header: new sap.m.Label({ text: this.getView().getModel("ddtext").getData()[item.ColumnName] }),
+                                        }))
+
+                                        oCells.push(new sap.m.Text({
+                                            text: { path: ci.ValueHelp["items"].path + ">" + item.ColumnName }
+                                        }))
+                                    })
+
                                     var oInput = new sap.m.Input({
                                         type: "Text",
                                         showValueHelp: true,
                                         valueHelpRequest: TableValueHelp.handleTableValueHelp.bind(this),
                                         showSuggestion: true,
+                                        // showTableSuggestionValueHelp: false,
                                         maxSuggestionWidth: ci.ValueHelp["SuggestionItems"].additionalText !== undefined ? ci.ValueHelp["SuggestionItems"].maxSuggestionWidth : "100px",
-                                        suggestionItems: {
+                                        suggestionColumns: oColumns,
+                                        suggestionRows: {
                                             path: ci.ValueHelp["SuggestionItems"].path,
-                                            length: 10000,
-                                            template: new sap.ui.core.ListItem({
-                                                key: ci.ValueHelp["SuggestionItems"].text,
-                                                text: sSuggestItemText,
-                                                additionalText: sSuggestItemAddtlText,
+                                            template: new sap.m.ColumnListItem({
+                                                cells: oCells
                                             }),
                                             templateShareable: false
                                         },
+                                        // suggestionItemSelected: this.suggestionItemSelected.bind(this),
                                         change: this.handleValueHelpChange.bind(this)
                                     })
 
@@ -988,6 +1070,7 @@ sap.ui.define([
                                         });
                                     }
 
+                                    oInput.setSuggestionRowValidator(this.suggestionRowValidator);
                                     oInput.addEventDelegate(oInputEventDelegate);
 
                                     col.setTemplate(oInput);
@@ -1168,7 +1251,7 @@ sap.ui.define([
                         this.byId("btnCancelHdr").setVisible(true);
                         this.byId("btnCopyHdr").setVisible(false);
                         this.byId("btnAddNewHdr").setVisible(true);
-                        this.byId("searchFieldHdr").setVisible(false);
+                        // this.byId("searchFieldHdr").setVisible(false);
 
                         this.byId("btnAddDtl").setEnabled(false);
                         this.byId("btnEditDtl").setEnabled(false);
@@ -1192,7 +1275,7 @@ sap.ui.define([
                         this.byId("btnDeleteHdr").setEnabled(false);
                         this.byId("btnRefreshHdr").setEnabled(false);
                         this.byId("btnCopyHdr").setEnabled(false);
-                        this.byId("searchFieldHdr").setEnabled(false);
+                        // this.byId("searchFieldHdr").setEnabled(false);
                     }
     
                     var oTable = this.byId(this._sActiveTable);
@@ -1285,7 +1368,7 @@ sap.ui.define([
                             this.byId("btnCancelHdr").setVisible(true);
                             this.byId("btnCopyHdr").setVisible(false);
                             this.byId("btnAddNewDtl").setVisible(false);
-                            this.byId("searchFieldHdr").setVisible(false);
+                            // this.byId("searchFieldHdr").setVisible(false);
 
                             this.byId("btnAddDtl").setEnabled(false);
                             this.byId("btnEditDtl").setEnabled(false);
@@ -1309,7 +1392,7 @@ sap.ui.define([
                             this.byId("btnDeleteHdr").setEnabled(false);
                             this.byId("btnRefreshHdr").setEnabled(false);
                             this.byId("btnCopyHdr").setEnabled(false);
-                            this.byId("searchFieldHdr").setEnabled(false);
+                            // this.byId("searchFieldHdr").setEnabled(false);
                         }
     
                         this._aDataBeforeChange = jQuery.extend(true, [], this.byId(this._sActiveTable).getModel().getData().rows);
@@ -1320,6 +1403,7 @@ sap.ui.define([
                             this._aColFilters = this.byId(this._sActiveTable).getBinding("rows").aFilters;
                         }
     
+
                         if (this.byId(this._sActiveTable).getBinding("rows").aSorters.length > 0) {
                             this._aColSorters = this.byId(this._sActiveTable).getBinding("rows").aSorters;
                         }
@@ -1372,7 +1456,7 @@ sap.ui.define([
                             this.byId("btnCancelHdr").setVisible(false);
                             this.byId("btnCopyHdr").setVisible(true);
                             this.byId("btnAddNewHdr").setVisible(false);
-                            this.byId("searchFieldHdr").setVisible(true);
+                            // this.byId("searchFieldHdr").setVisible(true);
 
                             this.byId("btnAddDtl").setEnabled(true);
                             this.byId("btnEditDtl").setEnabled(true);
@@ -1396,7 +1480,7 @@ sap.ui.define([
                             this.byId("btnDeleteHdr").setEnabled(true);
                             this.byId("btnRefreshHdr").setEnabled(true);
                             this.byId("btnCopyHdr").setEnabled(true);
-                            this.byId("searchFieldHdr").setEnabled(true);
+                            // this.byId("searchFieldHdr").setEnabled(true);
                         }
     
                         // if (this.byId(this._sActiveTable).getBinding("rows")) {
@@ -1523,7 +1607,7 @@ sap.ui.define([
                                             me.byId("btnCancelHdr").setVisible(false);
                                             me.byId("btnCopyHdr").setVisible(true);
                                             me.byId("btnAddNewDtl").setVisible(false);
-                                            me.byId("searchFieldHdr").setVisible(true);
+                                            // me.byId("searchFieldHdr").setVisible(true);
 
                                             me.byId("btnAddDtl").setEnabled(true);
                                             me.byId("btnEditDtl").setEnabled(true);
@@ -1549,7 +1633,7 @@ sap.ui.define([
                                             me.byId("btnDeleteHdr").setEnabled(true);
                                             me.byId("btnRefreshHdr").setEnabled(true);
                                             me.byId("btnCopyHdr").setEnabled(true);
-                                            me.byId("searchFieldHdr").setEnabled(true);
+                                            // me.byId("searchFieldHdr").setEnabled(true);
 
                                             me.getView().getModel("counts").setProperty("/detail", aData.length);
                                         }
@@ -1651,7 +1735,7 @@ sap.ui.define([
                                             me.byId("btnCancelHdr").setVisible(false);
                                             me.byId("btnCopyHdr").setVisible(true);
                                             me.byId("btnAddNewDtl").setVisible(false);
-                                            me.byId("searchFieldHdr").setVisible(true);
+                                            // me.byId("searchFieldHdr").setVisible(true);
 
                                             me.byId("btnAddDtl").setEnabled(true);
                                             me.byId("btnEditDtl").setEnabled(true);
@@ -1675,7 +1759,7 @@ sap.ui.define([
                                             me.byId("btnDeleteHdr").setEnabled(true);
                                             me.byId("btnRefreshHdr").setEnabled(true);
                                             me.byId("btnCopyHdr").setEnabled(true);
-                                            me.byId("searchFieldHdr").setEnabled(true);
+                                            // me.byId("searchFieldHdr").setEnabled(true);
                                         }
         
                                         if (me._aColFilters.length > 0) { me.setColumnFilters(me._sActiveTable); }
@@ -1713,7 +1797,7 @@ sap.ui.define([
                         this.byId("btnCancelHdr").setVisible(false);
                         this.byId("btnCopyHdr").setVisible(true);
                         this.byId("btnAddNewDtl").setVisible(false);
-                        this.byId("searchFieldHdr").setVisible(true);
+                        // this.byId("searchFieldHdr").setVisible(true);
 
                         this.byId("btnAddDtl").setEnabled(true);
                         this.byId("btnEditDtl").setEnabled(true);
@@ -1737,7 +1821,7 @@ sap.ui.define([
                         this.byId("btnDeleteHdr").setEnabled(true);
                         this.byId("btnRefreshHdr").setEnabled(true);
                         this.byId("btnCopyHdr").setEnabled(true);
-                        this.byId("searchFieldHdr").setEnabled(true);
+                        // this.byId("searchFieldHdr").setEnabled(true);
                     }                    
 
                     this.byId(this._sActiveTable).getModel().setProperty("/rows", this._aDataBeforeChange);
@@ -2236,6 +2320,7 @@ sap.ui.define([
                 var sRowPath = oSource.oParent.getBindingContext().sPath;
                 var isInvalid = !oSource.getSelectedKey() && oSource.getValue().trim();
                 oSource.setValueState(isInvalid ? "Error" : "None");
+                console.log(oSource);
 
                 oSource.getSuggestionItems().forEach(item => {
                     if (oSource.getSelectedKey() === "" && oSource.getValue() !== "") {
@@ -2871,16 +2956,51 @@ sap.ui.define([
             },
 
             onTableResize: function(oEvent) {
+                // console.log(this.byId("splitterHdr"))
                 this._sActiveTable = oEvent.getSource().data("TableId");
-                
+
+                var vSplitterSize = oEvent.getSource().data("Max") === "1" ? "100%" : "50%";
                 var vFullScreen = oEvent.getSource().data("Max") === "1" ? true : false;
                 var vSuffix = oEvent.getSource().data("ButtonIdSuffix");
+                var vHeader = oEvent.getSource().data("Header");
                 var me = this;
 
                 // this.byId("smartFilterBar").setFilterBarExpanded(!vFullScreen);
                 this.byId("btnFullScreen" + vSuffix).setVisible(!vFullScreen);
                 this.byId("btnExitFullScreen" + vSuffix).setVisible(vFullScreen);
-                this._oTables.filter(fItem => fItem.TableId !== me._sActiveTable).forEach(item => me.byId(item.TableId).setVisible(!vFullScreen));
+                // this._oTables.filter(fItem => fItem.TableId !== me._sActiveTable).forEach(item => me.byId(item.TableId).setVisible(!vFullScreen));
+
+                if (vFullScreen) {
+                    if (vHeader === "1") {
+                        this.byId("splitterHdr").setProperty("size", "100%");
+                        this.byId("splitterDtl").setProperty("size", "0%");
+                    }
+                    else {
+                        this.byId("splitterHdr").setProperty("size", "0%");
+                        this.byId("splitterDtl").setProperty("size", "100%");
+                    }
+                }
+                else {
+                    this.byId("splitterHdr").setProperty("size", "50%");
+                    this.byId("splitterDtl").setProperty("size", "50%");
+                }
+            },
+
+            suggestionRowValidator: function (oColumnListItem) {
+                var aCells = oColumnListItem.getCells();
+
+                if (aCells.length === 1) {
+                    return new sap.ui.core.Item({
+                        key: aCells[0].getText(),
+                        text: aCells[0].getText()
+                    }); 
+                }
+                else {
+                    return new sap.ui.core.Item({
+                        key: aCells[0].getText(),
+                        text: aCells[1].getText()
+                    });
+                }
             },
 
             //******************************************* */

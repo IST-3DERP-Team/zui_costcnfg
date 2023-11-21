@@ -18,3 +18,14 @@
 .sapMDialogScroll {
     height: 100%;
 }
+
+.green {
+    background-color: #28a745;
+    border-radius: 0.5rem;
+    width: 99%;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    color: white;
+}
+
+

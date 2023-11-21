@@ -83,7 +83,8 @@
                 "sap.ui.generic.app": {},
                 "sap.ui.table": {},
                 "sap.ushell": {},
-                "sap.suite.ui.microchart": {}
+                "sap.suite.ui.microchart": {},
+                "sap.tnt": {}
             }
         },
         "commands": {
