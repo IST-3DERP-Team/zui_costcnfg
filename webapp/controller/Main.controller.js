@@ -47,7 +47,18 @@ sap.ui.define([
                 this._oTables = [
                     { TableId: "headerTab" },
                     { TableId: "detailTab" }
-                ]
+                ];
+
+                this._oTableLayout = {
+                    headerTab: {
+                        type: "COSTCNFGHDR",
+                        tabname: "ZERP_CSCONFIG"
+                    },
+                    detailTab: {
+                        type: "COSTCNFGDTL",
+                        tabname: "ZERP_CSCONFVAR"
+                    }
+                }
 
                 // Common.openLoadingDialog(this);
 
@@ -55,7 +66,11 @@ sap.ui.define([
 
                 this.getView().setModel(new JSONModel({
                     activeComp: "",
-                    activeCompDisplay: ""
+                    activeCompDisplay: "",
+                    dataWrap: {
+                        headerTab: false,
+                        detailTab: false
+                    }
                 }), "ui");
 
                 this._counts = {
@@ -115,6 +130,9 @@ sap.ui.define([
                 oDDTextParam.push({CODE: "CUSTGRP"}); 
                 oDDTextParam.push({CODE: "ATTRIBCD"}); 
                 oDDTextParam.push({CODE: "STATUSCD"});
+                oDDTextParam.push({CODE: "SAVELAYOUT"});
+                oDDTextParam.push({CODE: "WRAP"});
+                oDDTextParam.push({CODE: "UNWRAP"});
 
                 oModel.create("/CaptionMsgSet", { CaptionMsgItems: oDDTextParam  }, {
                     method: "POST",
@@ -524,7 +542,7 @@ sap.ui.define([
                 var oTable = this.getView().byId(sTabId);
                 // console.log(oTable)
                 oTable.getModel().setProperty("/columns", oColumns);
-
+                console.log(oColumns)
                 // sap.ui.table.Table.prototype._scrollNext = function() {
                 //     // we are at the end => scroll one down if possible
                 //     if (this.getFirstVisibleRow() < this._getRowCount() - this.getVisibleRowCount()) {
@@ -541,11 +559,12 @@ sap.ui.define([
                     var sColumnSorted = context.getObject().Sorted;
                     var sColumnSortOrder = context.getObject().SortOrder;
                     var sColumnDataType = context.getObject().DataType;
+                    var sTextWrapping = context.getObject().WrapText;
 
-                    if (sColumnWidth === 0) sColumnWidth = 100;
+                    if (sColumnWidth === 0) sColumnWidth = 100; 
 
                     var oText = new sap.m.Text({
-                        wrapping: false,
+                        wrapping: sTextWrapping === "X" ? true : false,
                         tooltip: sColumnDataType === "BOOLEAN" ? "" : "{" + sColumnId + "}",
                         // width: (+sColumnWidth-15) + "px"
                     })
@@ -686,6 +705,9 @@ sap.ui.define([
                 
                 TableFilter.updateColumnMenu(sTabId, this);
 
+                var vWrap = oColumns[0].WrapText === "X" ? true : false;
+                this.getView().getModel("ui").setProperty("/dataWrap/" + sTabId, vWrap);
+                
                 // oColumns.forEach(item => {
                 //     var aFilterableColumns = [];
                 //     aFilterableColumns.push({
@@ -1075,6 +1097,7 @@ sap.ui.define([
                                         showValueHelp: true,
                                         valueHelpRequest: TableValueHelp.handleTableValueHelp.bind(this),
                                         showSuggestion: true,
+                                        suggest: this.onInputSuggest.bind(this),
                                         maxSuggestionWidth: ci.ValueHelp["SuggestionItems"].additionalText !== undefined ? ci.ValueHelp["SuggestionItems"].maxSuggestionWidth : "100px",
                                         suggestionColumns: oColumns,
                                         suggestionRows: {
@@ -1286,13 +1309,17 @@ sap.ui.define([
                         this.byId("btnCancelHdr").setVisible(true);
                         this.byId("btnCopyHdr").setVisible(false);
                         this.byId("btnAddNewHdr").setVisible(true);
+                        this.byId("btnTabLayoutHdr").setVisible(false);
+                        this.byId("btnDataWrapHdr").setVisible(false);
                         // this.byId("searchFieldHdr").setVisible(false);
 
                         this.byId("btnAddDtl").setEnabled(false);
                         this.byId("btnEditDtl").setEnabled(false);
                         this.byId("btnDeleteDtl").setEnabled(false);
                         this.byId("btnRefreshDtl").setEnabled(false);
-                        this.byId("searchFieldDtl").setEnabled(false);
+                        // this.byId("searchFieldDtl").setEnabled(false);
+                        this.byId("btnTabLayoutDtl").setEnabled(false);
+                        this.byId("btnDataWrapDtl").setEnabled(false);
                     }
                     else if (this._sActiveTable === "detailTab") {
                         this.byId("btnAddDtl").setVisible(false);
@@ -1303,13 +1330,17 @@ sap.ui.define([
                         this.byId("btnCancelDtl").setVisible(true);
                         // this.byId("btnCopyDtl").setVisible(true);
                         this.byId("btnAddNewDtl").setVisible(true);
-                        this.byId("searchFieldDtl").setVisible(false);
+                        // this.byId("searchFieldDtl").setVisible(false);
+                        this.byId("btnTabLayoutDtl").setVisible(false);
+                        this.byId("btnDataWrapDtl").setVisible(false);
 
                         this.byId("btnAddHdr").setEnabled(false);
                         this.byId("btnEditHdr").setEnabled(false);
                         this.byId("btnDeleteHdr").setEnabled(false);
                         this.byId("btnRefreshHdr").setEnabled(false);
                         this.byId("btnCopyHdr").setEnabled(false);
+                        this.byId("btnTabLayoutHdr").setEnabled(false);
+                        this.byId("btnDataWrapHdr").setEnabled(false);
                         // this.byId("searchFieldHdr").setEnabled(false);
                     }
     
@@ -1402,14 +1433,18 @@ sap.ui.define([
                             this.byId("btnSaveHdr").setVisible(true);
                             this.byId("btnCancelHdr").setVisible(true);
                             this.byId("btnCopyHdr").setVisible(false);
-                            this.byId("btnAddNewDtl").setVisible(false);
+                            // this.byId("btnAddNewHdr").setVisible(false);
+                            this.byId("btnTabLayoutHdr").setVisible(false);
+                            this.byId("btnDataWrapHdr").setVisible(false);
                             // this.byId("searchFieldHdr").setVisible(false);
 
                             this.byId("btnAddDtl").setEnabled(false);
                             this.byId("btnEditDtl").setEnabled(false);
                             this.byId("btnDeleteDtl").setEnabled(false);
                             this.byId("btnRefreshDtl").setEnabled(false);
-                            this.byId("searchFieldDtl").setEnabled(false);
+                            // this.byId("searchFieldDtl").setEnabled(false);
+                            this.byId("btnTabLayoutDtl").setEnabled(false);
+                            this.byId("btnDataWrapDtl").setEnabled(false);
                         }
                         else if (this._sActiveTable === "detailTab") {
                             this.byId("btnAddDtl").setVisible(false);
@@ -1419,14 +1454,18 @@ sap.ui.define([
                             this.byId("btnSaveDtl").setVisible(true);
                             this.byId("btnCancelDtl").setVisible(true);
                             // this.byId("btnCopyDtl").setVisible(true);
-                            this.byId("btnAddNewDtl").setVisible(false);
-                            this.byId("searchFieldDtl").setVisible(false);
+                            // this.byId("btnAddNewDtl").setVisible(false);
+                            // this.byId("searchFieldDtl").setVisible(false);
+                            this.byId("btnTabLayoutDtl").setVisible(false);
+                            this.byId("btnDataWrapDtl").setVisible(false);
 
                             this.byId("btnAddHdr").setEnabled(false);
                             this.byId("btnEditHdr").setEnabled(false);
                             this.byId("btnDeleteHdr").setEnabled(false);
                             this.byId("btnRefreshHdr").setEnabled(false);
                             this.byId("btnCopyHdr").setEnabled(false);
+                            this.byId("btnTabLayoutHdr").setEnabled(false);
+                            this.byId("btnDataWrapHdr").setEnabled(false);
                             // this.byId("searchFieldHdr").setEnabled(false);
                         }
     
@@ -1491,13 +1530,17 @@ sap.ui.define([
                             this.byId("btnCancelHdr").setVisible(false);
                             this.byId("btnCopyHdr").setVisible(true);
                             this.byId("btnAddNewHdr").setVisible(false);
+                            this.byId("btnTabLayoutHdr").setVisible(true);
+                            this.byId("btnDataWrapHdr").setVisible(true);
                             // this.byId("searchFieldHdr").setVisible(true);
 
                             this.byId("btnAddDtl").setEnabled(true);
                             this.byId("btnEditDtl").setEnabled(true);
                             this.byId("btnDeleteDtl").setEnabled(true);
                             this.byId("btnRefreshDtl").setEnabled(true);
-                            this.byId("searchFieldDtl").setEnabled(true);
+                            // this.byId("searchFieldDtl").setEnabled(true);
+                            this.byId("btnTabLayoutDtl").setEnabled(true);
+                            this.byId("btnDataWrapDtl").setEnabled(true);
                         }
                         else if (this._sActiveTable === "detailTab") {
                             this.byId("btnAddDtl").setVisible(true);
@@ -1508,13 +1551,17 @@ sap.ui.define([
                             this.byId("btnCancelDtl").setVisible(false);
                             // this.byId("btnCopyDtl").setVisible(false);
                             this.byId("btnAddNewDtl").setVisible(false);
-                            this.byId("searchFieldDtl").setVisible(true);
+                            // this.byId("searchFieldDtl").setVisible(true);
+                            this.byId("btnTabLayoutDtl").setVisible(true);
+                            this.byId("btnDataWrapDtl").setVisible(true);
     
                             this.byId("btnAddHdr").setEnabled(true);
                             this.byId("btnEditHdr").setEnabled(true);
                             this.byId("btnDeleteHdr").setEnabled(true);
                             this.byId("btnRefreshHdr").setEnabled(true);
                             this.byId("btnCopyHdr").setEnabled(true);
+                            this.byId("btnTabLayoutHdr").setEnabled(true);
+                            this.byId("btnDataWrapHdr").setEnabled(true);
                             // this.byId("searchFieldHdr").setEnabled(true);
                         }
     
@@ -1641,14 +1688,18 @@ sap.ui.define([
                                             me.byId("btnSaveHdr").setVisible(false);
                                             me.byId("btnCancelHdr").setVisible(false);
                                             me.byId("btnCopyHdr").setVisible(true);
-                                            me.byId("btnAddNewDtl").setVisible(false);
+                                            me.byId("btnAddNewHdr").setVisible(false);
+                                            me.byId("btnTabLayoutHdr").setVisible(true);
+                                            me.byId("btnDataWrapHdr").setVisible(true);
                                             // me.byId("searchFieldHdr").setVisible(true);
 
                                             me.byId("btnAddDtl").setEnabled(true);
                                             me.byId("btnEditDtl").setEnabled(true);
                                             me.byId("btnDeleteDtl").setEnabled(true);
                                             me.byId("btnRefreshDtl").setEnabled(true);
-                                            me.byId("searchFieldDtl").setEnabled(true);
+                                            // me.byId("searchFieldDtl").setEnabled(true);
+                                            me.byId("btnTabLayoutDtl").setEnabled(true);
+                                            me.byId("btnDataWrapDtl").setEnabled(true);
 
                                             me.getView().getModel("counts").setProperty("/header", aData.length);
                                         }
@@ -1661,13 +1712,17 @@ sap.ui.define([
                                             me.byId("btnCancelDtl").setVisible(false);
                                             // me.byId("btnCopyDtl").setVisible(false);
                                             me.byId("btnAddNewDtl").setVisible(false);
-                                            me.byId("searchFieldDtl").setVisible(true);
+                                            // me.byId("searchFieldDtl").setVisible(true);
+                                            me.byId("btnTabLayoutDtl").setVisible(true);
+                                            me.byId("btnDataWrapDtl").setVisible(true);
 
                                             me.byId("btnAddHdr").setEnabled(true);
                                             me.byId("btnEditHdr").setEnabled(true);
                                             me.byId("btnDeleteHdr").setEnabled(true);
                                             me.byId("btnRefreshHdr").setEnabled(true);
                                             me.byId("btnCopyHdr").setEnabled(true);
+                                            me.byId("btnTabLayoutHdr").setEnabled(true);
+                                            me.byId("btnDataWrapHdr").setEnabled(true);
                                             // me.byId("searchFieldHdr").setEnabled(true);
 
                                             me.getView().getModel("counts").setProperty("/detail", aData.length);
@@ -1769,14 +1824,18 @@ sap.ui.define([
                                             me.byId("btnSaveHdr").setVisible(false);
                                             me.byId("btnCancelHdr").setVisible(false);
                                             me.byId("btnCopyHdr").setVisible(true);
-                                            me.byId("btnAddNewDtl").setVisible(false);
+                                            me.byId("btnAddNewHdr").setVisible(false);
+                                            me.byId("btnTabLayoutHdr").setVisible(true);
+                                            me.byId("btnDataWrapHdr").setVisible(true);
                                             // me.byId("searchFieldHdr").setVisible(true);
 
                                             me.byId("btnAddDtl").setEnabled(true);
                                             me.byId("btnEditDtl").setEnabled(true);
                                             me.byId("btnDeleteDtl").setEnabled(true);
                                             me.byId("btnRefreshDtl").setEnabled(true);
-                                            me.byId("searchFieldDtl").setEnabled(true);
+                                            // me.byId("searchFieldDtl").setEnabled(true);
+                                            me.byId("btnTabLayoutDtl").setEnabled(true);
+                                            me.byId("btnDataWrapDtl").setEnabled(true);
                                         }
                                         else if (me._sActiveTable === "detailTab") {
                                             me.byId("btnAddDtl").setVisible(true);
@@ -1787,13 +1846,17 @@ sap.ui.define([
                                             me.byId("btnCancelDtl").setVisible(false);
                                             // me.byId("btnCopyDtl").setVisible(false);
                                             me.byId("btnAddNewDtl").setVisible(false);
-                                            me.byId("searchFieldDtl").setVisible(true);
+                                            // me.byId("searchFieldDtl").setVisible(true);
+                                            me.byId("btnTabLayoutDtl").setVisible(true);
+                                            me.byId("btnDataWrapDtl").setVisible(true);
                     
                                             me.byId("btnAddHdr").setEnabled(true);
                                             me.byId("btnEditHdr").setEnabled(true);
                                             me.byId("btnDeleteHdr").setEnabled(true);
                                             me.byId("btnRefreshHdr").setEnabled(true);
                                             me.byId("btnCopyHdr").setEnabled(true);
+                                            me.byId("btnTabLayoutHdr").setEnabled(true);
+                                            me.byId("btnDataWrapHdr").setEnabled(true);
                                             // me.byId("searchFieldHdr").setEnabled(true);
                                         }
         
@@ -1831,14 +1894,18 @@ sap.ui.define([
                         this.byId("btnSaveHdr").setVisible(false);
                         this.byId("btnCancelHdr").setVisible(false);
                         this.byId("btnCopyHdr").setVisible(true);
-                        this.byId("btnAddNewDtl").setVisible(false);
+                        this.byId("btnAddNewHdr").setVisible(false);
+                        this.byId("btnTabLayoutHdr").setVisible(true);
+                        this.byId("btnDataWrapHdr").setVisible(true);
                         // this.byId("searchFieldHdr").setVisible(true);
 
                         this.byId("btnAddDtl").setEnabled(true);
                         this.byId("btnEditDtl").setEnabled(true);
                         this.byId("btnDeleteDtl").setEnabled(true);
                         this.byId("btnRefreshDtl").setEnabled(true);
-                        this.byId("searchFieldDtl").setEnabled(true);
+                        // this.byId("searchFieldDtl").setEnabled(true);
+                        this.byId("btnTabLayoutDtl").setEnabled(true);
+                        this.byId("btnDataWrapDtl").setEnabled(true);
                     }
                     else if (this._sActiveTable === "detailTab") {
                         this.byId("btnAddDtl").setVisible(true);
@@ -1849,13 +1916,17 @@ sap.ui.define([
                         this.byId("btnCancelDtl").setVisible(false);
                         // this.byId("btnCopyDtl").setVisible(false);
                         this.byId("btnAddNewDtl").setVisible(false);
-                        this.byId("searchFieldDtl").setVisible(true);
+                        // this.byId("searchFieldDtl").setVisible(true);
+                        this.byId("btnTabLayoutDtl").setVisible(true);
+                        this.byId("btnDataWrapDtl").setVisible(true);
 
                         this.byId("btnAddHdr").setEnabled(true);
                         this.byId("btnEditHdr").setEnabled(true);
                         this.byId("btnDeleteHdr").setEnabled(true);
                         this.byId("btnRefreshHdr").setEnabled(true);
                         this.byId("btnCopyHdr").setEnabled(true);
+                        this.byId("btnTabLayoutHdr").setEnabled(true);
+                        this.byId("btnDataWrapHdr").setEnabled(true);
                         // this.byId("searchFieldHdr").setEnabled(true);
                     }                    
 
@@ -2354,8 +2425,6 @@ sap.ui.define([
                 var oSource = oEvent.getSource();
                 var sRowPath = oSource.oParent.getBindingContext().sPath;
                 var isInvalid = !oSource.getSelectedKey() && oSource.getValue().trim();
-                oSource.setValueState(isInvalid ? "Error" : "None");
-                console.log(oSource);
 
                 // oSource.getSuggestionItems().forEach(item => {
                 //     if (oSource.getSelectedKey() === "" && oSource.getValue() !== "") {
@@ -2376,7 +2445,10 @@ sap.ui.define([
                 //     }
                 // })
 
-                if (isInvalid) this._validationErrors.push(oEvent.getSource().getId());
+                if (isInvalid) {
+                    this.validateInputValue(oSource);
+                    this._validationErrors.push(oEvent.getSource().getId()); 
+                }
                 else {
                     this.byId(this._sActiveTable).getModel().setProperty(sRowPath + '/' + oSource.getBindingInfo("value").parts[0].path, oSource.getSelectedKey());
 
@@ -2391,6 +2463,87 @@ sap.ui.define([
 
                 if (this._sActiveTable === "headerTab") this._bHdrChanged = true;
                 else if (this._sActiveTable === "detailTab") this._bDtlChanged = true;
+            },
+
+            validateInputValue(source) {
+                var oInputSource = source;                
+                var sValue = oInputSource.getProperty("value").toLowerCase();
+                var sFieldName = oInputSource.getBindingInfo("value").parts[0].path;
+                var sDataSourceModel = oInputSource.getBindingInfo("value").parts[1].value;
+                var sKey = oInputSource.getBindingInfo("value").parts[2].value;
+                var sText = oInputSource.getBindingInfo("value").parts[3].value;
+                var sTextFormatMode = oInputSource.getProperty("textFormatMode");
+                var sRowPath = oInputSource.oParent.getBindingContext().sPath;
+                var aDataSource = jQuery.extend(true, [], this.getView().getModel(sDataSourceModel).getData());
+
+                aDataSource.forEach(item => {
+                    if (sTextFormatMode === "ValueKey") {
+                        item.DESCCODE = item[sText] + " (" + item[sKey] + ")";
+                    }
+                    else if (sTextFormatMode === "KeyValue") {
+                        item.CODEDESC = item[sKey] + " (" + item[sText] + ")";
+                    }
+                })
+
+                var aCols = Object.keys(aDataSource[0]).filter(fItem => fItem !== "__metadata");
+                var vColCount = aCols.length;
+
+                var matchedData = aDataSource.filter(function (d) {
+                    for (let i = 0; i < vColCount; i++) {
+                        // check for a match
+                        if (d[aCols[i]] != null) {
+                            if (d[aCols[i]].toString().toLowerCase().indexOf(sValue) !== -1 || !sValue) {
+                                // found match, return true to add to result set
+                                return true;
+                            }
+                        }
+                    }
+                });
+
+                if (matchedData.length !== 0) {
+                    // console.log(matchedData[0][sKey])                    
+                    
+                    if (sTextFormatMode === "ValueKey") {
+                        oInputSource.setValue(matchedData[0][sText] + " (" + matchedData[0][sKey] + ")")
+                    }
+                    else if (sTextFormatMode === "KeyValue") {
+                        oInputSource.setValue(matchedData[0][sKey] + " (" + matchedData[0][sText] + ")")
+                    }
+                    else if (sTextFormatMode === "Key") {
+                        oInputSource.setValue(matchedData[0][sKey])
+                    }
+                    else if (sTextFormatMode === "Value") {
+                        oInputSource.setValue(matchedData[0][sText])
+                    }
+
+                    oInputSource.setSelectedKey(matchedData[0][sKey]);
+                    oInputSource.setValueState("None");
+
+                    this.byId(this._sActiveTable).getModel().setProperty(sRowPath + '/' + sFieldName, matchedData[0][sKey]);
+                }
+                else {
+                    oInputSource.setValueState(isInvalid ? "Error" : "None");
+                }
+            },
+
+            onInputSuggest: function(oEvent) {
+                //override the default filtering "StartsWidth" to "Contains"
+                var oInputSource = oEvent.getSource();
+                var sSuggestValue = oEvent.getParameter("suggestValue").toLowerCase();
+                var aFilters = [];
+                var oFilter = null;
+                
+                if (oInputSource.getSuggestionRows().length > 0) {
+                    oInputSource.getSuggestionRows()[0].getCells().forEach(cell => {
+                        aFilters.push(new Filter(cell.getBinding("text").sPath, FilterOperator.Contains, sSuggestValue))
+                    })
+    
+                    oFilter = new Filter(aFilters, false);
+    
+                    oInputSource.getBinding("suggestionRows").filter(oFilter);
+                    oInputSource.setShowSuggestion(true);
+                    oInputSource.setFilterSuggests(false);
+                }
             },
 
             onCellClick: function (oEvent) {
@@ -3020,6 +3173,23 @@ sap.ui.define([
                 }
             },
 
+            onWrapText: function(oEvent) {
+                this._sActiveTable = oEvent.getSource().data("TableId");
+                var vWrap = this.getView().getModel("ui").getData().dataWrap[this._sActiveTable];
+                // var oButton = oEvent.getSource();
+
+                // if (vWrap) { oButton.setText("Wrap"); }
+                // else { oButton.setText("Unwrap"); }
+                
+                this.byId(this._sActiveTable).getColumns().forEach(col => {
+                    var oTemplate = col.getTemplate();
+                    oTemplate.setWrapping(!vWrap);
+                    col.setTemplate(oTemplate);
+                })
+
+                this.getView().getModel("ui").setProperty("/dataWrap/" + [this._sActiveTable], !vWrap);
+            },
+
             suggestionRowValidator: function (oColumnListItem) {
                 var aCells = oColumnListItem.getCells();
 
@@ -3035,6 +3205,55 @@ sap.ui.define([
                         text: aCells[1].getText()
                     });
                 }
+            },
+
+            onSaveTableLayout: function (oEvent) {
+                //saving of the layout of table
+                this._sActiveTable = oEvent.getSource().data("TableId");
+                var oTable = this.byId(this._sActiveTable);
+                var oColumns = oTable.getColumns();
+                var vSBU = "VER"; //this.getView().getModel("ui").getData().sbu;
+                var me = this;
+                var ctr = 1;
+
+                var oParam = {
+                    "SBU": vSBU,
+                    "TYPE": this._oTableLayout[this._sActiveTable].type,
+                    "TABNAME": this._oTableLayout[this._sActiveTable].tabname,
+                    "TableLayoutToItems": []
+                };
+
+                //get information of columns, add to payload
+                oColumns.forEach((column) => {
+                    oParam.TableLayoutToItems.push({
+                        // COLUMNNAME: column.sId,
+                        COLUMNNAME: column.mProperties.sortProperty,
+                        ORDER: ctr.toString(),
+                        SORTED: column.mProperties.sorted,
+                        SORTORDER: column.mProperties.sortOrder,
+                        SORTSEQ: "1",
+                        VISIBLE: column.mProperties.visible,
+                        WIDTH: column.mProperties.width.replace('px',''),
+                        WRAPTEXT: this.getView().getModel("ui").getData().dataWrap[this._sActiveTable] === true ? "X" : ""
+                    });
+
+                    ctr++;
+                });
+
+                console.log(oParam)
+
+                //call the layout save
+                var oModel = this.getOwnerComponent().getModel("ZGW_3DERP_COMMON_SRV");
+
+                oModel.create("/TableLayoutSet", oParam, {
+                    method: "POST",
+                    success: function(data, oResponse) {
+                        MessageBox.information(me.getView().getModel("ddtext").getData()["INFO_LAYOUT_SAVE"]);
+                    },
+                    error: function(err) {
+                        MessageBox.error(err);
+                    }
+                });                
             },
 
             //******************************************* */
