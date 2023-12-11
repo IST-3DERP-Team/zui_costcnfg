@@ -282,14 +282,14 @@ sap.ui.define([
             })
 
             oDialog.getModel().setProperty("/sourceTabId", sTableId);
+            oDialog.getModel().setProperty("/selectedItem", vSelectedItem);
+            oDialog.getModel().setProperty("/selectedColumn", vSelectedColumn);
+            oDialog.getModel().setProperty("/reset", false);
             oDialog.getModel().setProperty("/items", oTableColumns);
             oDialog.getModel().setProperty("/values", oColumnValues);
             oDialog.getModel().setProperty("/currValues", jQuery.extend(true, [], oColumnValues[vSelectedColumn]));
             oDialog.getModel().setProperty("/rowCount", oColumnValues[vSelectedColumn].length);
-            oDialog.getModel().setProperty("/selectedItem", vSelectedItem);
-            oDialog.getModel().setProperty("/selectedColumn", vSelectedColumn);
             oDialog.getModel().setProperty("/search", oSearchValues);
-            oDialog.getModel().setProperty("/reset", false);
             oDialog.getModel().setProperty("/custom", oFilterCustom);
             oDialog.getModel().setProperty("/customColFilterOperator", oFilterCustom[vSelectedColumn].Operator);
             oDialog.getModel().setProperty("/customColFilterFrVal", oFilterCustom[vSelectedColumn].ValFr);
@@ -841,9 +841,25 @@ sap.ui.define([
                 sQuery = oEvent.getParameter("query");
             }
 
-            if (sQuery) {
+            if (sQuery) { 
+                var oQueries = sQuery.split("*");
+
                 oColumnValues[vSelectedColumn].forEach(val => {
-                    if (val.Value.toLocaleLowerCase().indexOf(sQuery.toLocaleLowerCase()) >= 0) {
+                    var vMatch = true;
+
+                    oQueries.forEach(q => {
+                        if (!vMatch) { return; }
+                        if (q.trim() === "") { return; }
+
+                        if (val.Value.toLocaleLowerCase().indexOf(q.toLocaleLowerCase().trim()) >= 0) {
+                            vMatch = true;
+                        }
+                        else {
+                            vMatch = false;
+                        }
+                    })
+
+                    if (vMatch) {
                         oCurrColumnValues.push(val);
                     }
                 })

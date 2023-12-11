@@ -264,19 +264,28 @@ sap.ui.define([
             var oTable = oEvent.getSource().oParent.oParent;
             var sQuery = oEvent.getParameter("query");
             var oFilter = null;
-            var aFilter = [];
+            var aFilters = []; 
 
             if (sQuery) {
+                var oQueries = sQuery.split("*");
+
                 oTable.getColumns().forEach(col => {
-                    if (col.getAggregation("template").getBindingInfo("text") !== undefined) {
-                        aFilter.push(new Filter(col.getAggregation("template").getBindingInfo("text").parts[0].path, FilterOperator.Contains, sQuery));
-                    }
-                    else if (col.getAggregation("template").getBindingInfo("selected") !== undefined) {
-                        aFilter.push(new Filter(col.getAggregation("template").getBindingInfo("selected").parts[0].path, FilterOperator.EQ, sQuery));
-                    }
+                    var aFilter = [];
+
+                    oQueries.forEach(q => {
+                        if (col.getAggregation("template").getBindingInfo("text") !== undefined) {
+                            aFilter.push(new Filter(col.getAggregation("template").getBindingInfo("text").parts[0].path, FilterOperator.Contains, q.trim()));
+                        }
+                        else if (col.getAggregation("template").getBindingInfo("selected") !== undefined) {
+                            aFilter.push(new Filter(col.getAggregation("template").getBindingInfo("selected").parts[0].path, FilterOperator.EQ, q.trim()));
+                        }
+                    })
+
+                    var oFilters = new Filter(aFilter, true);
+                    aFilters.push(oFilters);
                 })
 
-                oFilter = new Filter(aFilter, false);
+                oFilter = new Filter(aFilters, false);
             }
 
             oTable.getBinding("rows").filter(oFilter, "Application");

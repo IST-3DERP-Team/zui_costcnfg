@@ -3176,10 +3176,6 @@ sap.ui.define([
             onWrapText: function(oEvent) {
                 this._sActiveTable = oEvent.getSource().data("TableId");
                 var vWrap = this.getView().getModel("ui").getData().dataWrap[this._sActiveTable];
-                // var oButton = oEvent.getSource();
-
-                // if (vWrap) { oButton.setText("Wrap"); }
-                // else { oButton.setText("Unwrap"); }
                 
                 this.byId(this._sActiveTable).getColumns().forEach(col => {
                     var oTemplate = col.getTemplate();
