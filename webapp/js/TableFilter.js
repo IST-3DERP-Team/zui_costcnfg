@@ -1288,7 +1288,7 @@ sap.ui.define([
             if (oColumnProp.getProperty("sorted")) {
                 bSorted = true;
             }
-            console.log(oColumnProp)
+
             return bSorted;
         }
 	};
