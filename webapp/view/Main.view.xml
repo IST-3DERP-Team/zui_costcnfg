@@ -6,6 +6,7 @@
     height="100%"
     xmlns:smartfilterbar="sap.ui.comp.smartfilterbar"
     xmlns:uiL="sap.ui.layout"
+    xmlns:u="sap.ui.unified"
     xmlns:uiT="sap.ui.table">
     <Page id="page" enableScrolling="false" class="sapUiNoContentPadding" showHeader="false">
         <dependents>
@@ -240,6 +241,13 @@
                                                     <core:CustomData key="TableId" value="headerTab" />
                                                 </customData>
                                             </Button>
+                                            <Button id="btnTest" 
+                                                icon="sap-icon://refresh"
+                                                press="onFreeze"
+                                                tooltip="{ddtext>/REFRESH}"
+                                                visible="false"/>
+                                            <u:FileUploader id="fileUploaderId" sameFilenameAllowed="true" iconOnly="false" buttonOnly="true" fileType="XLSX,xlsx"
+                                                icon="sap-icon://upload" iconFirst="true" tooltip="Select upload file" buttonText="Upload Excel" change="onUploadExcel" visible="false"/>
                                         </OverflowToolbar>
                                     </uiT:extension>
                                     <uiT:layoutData>
@@ -328,7 +336,7 @@
                                                     <core:CustomData key="Fullscreen" value="1" />
                                                     <core:CustomData key="Part" value="detail" />
                                                     <core:CustomData key="HeaderSize" value="0%" />
-                                                    <core:CustomData key="DetailSize" value="100%" />
+                                                    <core:CustomData key="DetailSize" value="102%" />
                                                 </customData>
                                             </Button>
                                             <Button id="btnExitFullScreenDtl" 

@@ -380,8 +380,8 @@ sap.ui.define([
                     }
                     else {
                         var oCtrl = me.getView().byId("smartFilterBar").determineControlByName(item.key);
-
-                        if (oCtrl) {
+                        // console.log(oCtrl)
+                        if (oCtrl && (!oCtrl instanceof sap.m.DateRangeSelection)) {
                             oCtrl.getTokens().map(function(oToken) {
                                 aKeyText.push({
                                     Key: oToken.getKey(),

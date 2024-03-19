@@ -13,11 +13,13 @@ sap.ui.define([
     "../js/TableFilter",
     'jquery.sap.global',
     "../js/SmartFilterCustomControl",
+    "../libs/xlsx",
+    "../libs/jszip",
 ],
     /**
      * @param {typeof sap.ui.core.mvc.Controller} Controller
      */
-    function (Controller,JSONModel,MessageBox,Common,Filter,FilterOperator,HashChanger,Token,ColumnListItem,Label,TableValueHelp,TableFilter,jQuery,SmartFilterCustomControl) {
+    function (Controller,JSONModel,MessageBox,Common,Filter,FilterOperator,HashChanger,Token,ColumnListItem,Label,TableValueHelp,TableFilter,jQuery,SmartFilterCustomControl,xlsx,jszip) {
         "use strict";
 
         var me;
@@ -1200,7 +1202,8 @@ sap.ui.define([
                                             length: 10000,
                                             templateShareable: false
                                         },
-                                        change: this.handleValueHelpChange.bind(this)
+                                        change: this.handleValueHelpChange.bind(this),
+                                        suggestionItemSelected: this.onInputSuggestionItemSelected.bind(this)
                                     })
 
                                     oInput.setSuggestionRowValidator(this.suggestionRowValidator);
@@ -2630,6 +2633,8 @@ sap.ui.define([
                 var sSuggestValue = oEvent.getParameter("suggestValue").toLowerCase();
                 var aFilters = [];
                 var oFilter = null;
+
+                this._inputSuggest = true;
                 
                 if (oInputSource.getSuggestionRows().length === 0){
                     oInputSource.getBinding("suggestionRows").filter(null);
@@ -2646,6 +2651,10 @@ sap.ui.define([
                     oInputSource.setShowSuggestion(true);
                     oInputSource.setFilterSuggests(false);
                 }
+            },
+
+            onInputSuggestionItemSelected: function(oEvent) {
+                this._inputSuggest = false;
             },
 
             onCellClick: function (oEvent) {
@@ -3121,6 +3130,8 @@ sap.ui.define([
                 this._sActiveTable = sTabId;
 
                 this.setActiveRowHighlight();
+
+                console.log(oEvent.getParameters());
             },
 
             onSort: function(oEvent) {
@@ -3167,6 +3178,8 @@ sap.ui.define([
                 if (oEvent.key === "ArrowUp" || oEvent.key === "ArrowDown") {
                     //prevent increase/decrease of number value
                     oEvent.preventDefault();
+
+                    if (this._inputSuggest) { return }
                     
                     var sTableId = oEvent.srcControl.oParent.oParent.sId;
                     var oTable = this.byId(sTableId);
@@ -3260,13 +3273,15 @@ sap.ui.define([
 
                 var oHeaderLayoutData = new sap.ui.layout.SplitterLayoutData({
                     size: vHeaderSize,
-                    resizable: false
+                    resizable: !vFullScreen
                 });
 
                 var oDetailLayoutData = new sap.ui.layout.SplitterLayoutData({
                     size: vDetailSize,
-                    resizable: false
+                    resizable: !vFullScreen
                 });
+
+                document.getElementsByClassName("sapUiLoSplitterBar")[0].setAttribute("style", "display: " + (vFullScreen ? "none" : "flex"));
 
                 oHeaderPane.setLayoutData(oHeaderLayoutData);
                 oDetailPane.setLayoutData(oDetailLayoutData);
@@ -3378,6 +3393,234 @@ sap.ui.define([
                         MessageBox.error(err);
                     }
                 });                
+            },
+
+            onFreeze: function(oEvent) {
+                var oTable = this.byId("headerTab");
+                var oColumn = oTable.getColumns()[5];
+
+                oTable.removeColumn(oColumn, true);
+                oTable.insertColumn(oColumn, 0);
+            },
+
+            onUploadExcel: function(e) {
+                //start of upload
+                this._import(e.getParameter("files") && e.getParameter("files")[0]);
+                this._fileName = e.getParameter('files')[0].name;
+            },
+    
+            _import: function(file) {
+                var that = this;
+
+                var me = this;
+                var columnData = [];
+                var oModel = this.getOwnerComponent().getModel();
+                // var oTable = this.getView().byId("UploadTable");
+                // var oMapIdCB = this.getView().byId('MapIdCB');
+                var template = "0000000001";
+
+                //get the file from the file reader
+                if (file && window.FileReader) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        var data = e.target.result;
+                        var workbook = XLSX.read(data, {
+                            type: 'binary'
+                        });
+
+                        //get the first sheet
+                        var sheetName = workbook.SheetNames[0];
+                        
+                        //get excel data in json format
+                        var excelJson = XLSX.utils.make_json(workbook.Sheets[sheetName], {header:1});                        
+                        console.log(excelJson)
+
+                        var oModelTemplate = me.getOwnerComponent().getModel("ZGW_3DERP_COMMON_SRV");
+                        var oParam = {
+                            SBU: "VER",
+                            MDULE: "PRODOUTPUT",
+                            MAPID: "PROCESS",
+                            N_ExcelMapItem: []
+                        }
+
+                        oModelTemplate.create("/ExcelMapSet", oParam, {
+                            method: "POST",
+                            success: function(oResult, oResponse) {               
+                                console.log(oResult);
+                                // me.getView().setModel(new JSONModel(oDDTextResult), "ddtext");
+
+                                var aTableColumns = oResult.N_ExcelMapItem.results;
+                                var vLabelRow = oResult.LBLROW;
+                                var vDataRow = oResult.STARTROW;
+                                var vDestTable = oResult.DESTTBL;
+                                var vColStart = oResult.COLSTART;
+                                var vColFin = oResult.COLFIN;
+
+                                // Initialize an array to store the mapped data
+                                let mappedData = [];
+
+                                // Iterate through the Excel data (starting from the second row to skip the header)
+                                for (let i = vDataRow; i < excelJson.length; i++) {
+                                    let row = excelJson[i];
+                                    let mappedRow = {};
+
+                                    // Iterate through the columns in the row
+                                    for (let j = 0; j < row.length; j++) {
+                                        const columnName = excelJson[vLabelRow][j]; // Get the column name from the header row
+                                        const matchColumn = aTableColumns.filter(fItem => fItem.FLDNAME.toLowerCase() === columnName.toLowerCase());
+
+                                        // Only map if a corresponding field name is found in the mapping
+                                        if (matchColumn.length > 0) {
+                                            mappedRow[matchColumn[0].FLDNAME] = row[j] === undefined ? "" : row[j];
+                                        }                                        
+                                    }
+
+                                    mappedData.push(mappedRow);
+                                }
+                                console.log(mappedData);
+                            },
+                            error: function(err) { }
+                        });
+
+                        // oModel.setHeaders({
+                        //     sbu: _this.sbu,
+                        //     mapid: template,
+                        //     module: 'UPLOADGR'
+                        // });
+                
+                        // //get the template based on Map ID
+                        // oModel.read("/UploadTemplateSet", {
+                        //     success: function (oData, oResponse) {
+                        //         //console.log(oData)
+                        //         oData.results.forEach((column) => {
+                        //             columnData.push({
+                        //                 "Columnname": column.FLDNAME,
+                        //                 "Desc1": column.FLDDESC,
+                        //                 "Seqno": column.SEQNO
+                        //             })
+                        //         })
+
+                        //         var columnMapping = {};
+
+                        //         oData.results.forEach(item => {
+                        //             const column = item.SCRCOLNAME;
+                        //             const field = item.FLDNAME;
+                        //             columnMapping[column] = field;
+                        //         });
+
+                        //         // Initialize an array to store the mapped data
+                        //         let mappedData = [];
+
+                        //         // Iterate through the Excel data (starting from the second row to skip the header)
+                        //         for (let i = 1; i < excelJson.length; i++) {
+                        //             let row = excelJson[i];
+                        //             let mappedRow = {};
+
+                        //             // Iterate through the columns in the row
+                        //             for (let j = 0; j < row.length; j++) {
+                        //                 const columnName = excelJson[0][j]; // Get the column name from the header row
+                        //                 const fieldName = columnMapping[columnName]; // Get the corresponding field name from the mapping
+
+                        //                 //if (fieldName !== undefined) {
+                        //                     // Only map if a corresponding field name is found in the mapping
+                        //                     mappedRow[fieldName] = row[j] === undefined ? "" : row[j];
+                        //                 //}
+                        //             }
+
+                        //             mappedData.push(mappedRow);
+                        //         }
+                        //         console.log(mappedData)
+                        //         console.log(JSON.stringify(mappedData));
+                        //         var oEntry = {
+                        //             Mdule: "UPLOADGR",
+                        //             Sbu:_this.sbu,
+                        //             Dlvno:_this.dlvNo,
+                        //             UploadIDGRSet: mappedData
+                        //         }
+                                
+                        //         console.log(oEntry)
+                        //         console.log(JSON.stringify( oEntry))
+
+                        //         oModel.create("/UploadHeadIDGRSet", oEntry, {
+                        //             method: "POST",
+                        //             success: function (data, oResponse) {
+                        //                 data.UploadIDGRSet.results.forEach((item, index) => {
+                        //                     item.Uploaded = item.Uploaded === "X" || item.Uploaded === "1" ? true : false; 
+                        //                 })
+                        //                 console.log(data)
+                        //                 //MessageBox.information(data.RetMsg)
+                        //                 _this.closeLoadingDialog();
+
+                        //                 if (!me._UploadExcelDialog) {
+                        //                     me._UploadExcelDialog = sap.ui.xmlfragment("zuiinbound.view.fragments.dialog.UploadExcelDialog", me);
+                        
+                        //                     me._UploadExcelDialog.setModel(
+                        //                         new JSONModel({
+                        //                             rows: data.UploadIDGRSet.results,
+                        //                             rowCount: data.UploadIDGRSet.results.length > 13 ? data.UploadIDGRSet.results.length : 13
+                        //                         })
+                        //                     )
+                        
+                        //                     me.getView().addDependent(me._UploadExcelDialog);
+                        
+                        //                 }
+                        //                 else {
+                        //                     me._UploadExcelDialog.getModel().setProperty("/rows", data.UploadIDGRSet.results);
+                        //                     me._UploadExcelDialog.getModel().setProperty("/rowCount", data.UploadIDGRSet.results.length);
+                        //                 }
+                        
+                        //                 me._UploadExcelDialog.getContent()[0].removeSelectionInterval(0, oData.results.length - 1);
+                
+                        //                 //open fragment
+                        //                 me._UploadExcelDialog.open();
+                                        
+                
+                        //             },
+                        //             error: function (err) {
+                        //                 var errorMsg;
+                        //                 try {
+                        //                     errorMsg = JSON.parse(err.responseText).error.message.value;
+                        //                 } catch (err) {
+                        //                     errorMsg = err.responseText;
+                        //                 }
+                        //                 //console.log("error", err)
+                        //                 //console.log(JSON.stringify( err))
+                        //                 MessageBox.error(errorMsg);
+                        //                 _this.closeLoadingDialog();
+                        //             }
+                        //         });
+                        //         /*
+                        //         //bind the data on the table
+                        //         oTable.setModel(oJSONModel, "DataModel");
+                        //         oTable.bindColumns("DataModel>/columns", function (sId, oContext) {
+                        //             var column = oContext.getObject();
+                        //             return new sap.ui.table.Column({
+                        //                 name: column.Columnname,
+                        //                 label: "{i18n>" + column.Columnname + "}",
+                        //                 template: new sap.m.Text({ text: "{DataModel>" + column.Columnname + "}" }),
+                        //                 sortProperty: column.Columnname,
+                        //                 filterProperty: column.Columnname,
+                        //                 width: "8rem"
+                        //             });
+                        //         });
+        
+                        //         oTable.bindRows("DataModel>/results");
+
+                        //         var oSaveButton = me.getView().byId('SaveButton');
+                        //         oSaveButton.setEnabled(true);
+
+                        //         me.setChangeStatus(true);
+                        //         */
+                        //     },
+                        //     error: function (err) { 
+                        //     }
+                        // });
+                    };
+                    reader.onerror = function(ex) {
+                        console.log(ex);
+                    };
+                    reader.readAsBinaryString(file);
+                }
             },
 
             //******************************************* */

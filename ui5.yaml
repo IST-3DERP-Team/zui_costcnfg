@@ -20,10 +20,10 @@ server:
             url: http://190.92.230.65:8000
             client: '888'
             destination: LTD888_S4HANA2022
-          - path: /sap
-            url: http://190.92.230.65:8000
-            client: '888'
-            destination: LTD888_S4HANA2022
+          # - path: /sap
+            # url: http://190.92.230.65:8000
+            # client: '888'
+            # destination: LTD888_S4HANA2022
     - name: fiori-tools-appreload
       afterMiddleware: compression
       configuration:
